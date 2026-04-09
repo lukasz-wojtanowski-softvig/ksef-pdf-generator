@@ -2,7 +2,9 @@ import pdfMake, { TCreatedPdf } from 'pdfmake/build/pdfmake.js';
 import pdfFonts from 'pdfmake/build/vfs_fonts.js';
 import { Content, TDocumentDefinitions } from 'pdfmake/interfaces';
 import { generateStyle, getValue, hasValue } from '../shared/PDF-functions.js';
-import { TRodzajFaktury } from '../shared/consts/const.js';
+import { TRodzajFaktury } from '../shared/consts/FA.const.js';
+import { Position } from '../shared/enums/common.enum.js';
+import { ZamowienieKorekta } from './enums/invoice.enums.js';
 import { generateAdnotacje } from './generators/FA2/Adnotacje.js';
 import { generateDodatkoweInformacje } from './generators/FA2/DodatkoweInformacje.js';
 import { generatePlatnosc } from './generators/FA2/Platnosc.js';
@@ -17,9 +19,8 @@ import { generateDaneFaKorygowanej } from './generators/common/DaneFaKorygowanej
 import { generateNaglowek } from './generators/common/Naglowek.js';
 import { generateRozliczenie } from './generators/common/Rozliczenie.js';
 import { generateStopka } from './generators/common/Stopka.js';
-import { Faktura } from './types/fa2.types';
-import { ZamowienieKorekta } from './enums/invoice.enums.js';
-import { AdditionalDataTypes } from './types/common.types';
+import { AdditionalDataTypes } from './types/common.types.js';
+import { Faktura } from './types/fa2.types.js';
 
 pdfMake.vfs = pdfFonts.vfs;
 
@@ -28,6 +29,7 @@ export function generateFA2(invoice: Faktura, additionalData: AdditionalDataType
     invoice.Fa?.RodzajFaktury?._text == TRodzajFaktury.KOR && hasValue(invoice.Fa?.OkresFaKorygowanej);
   const rabatOrRowsInvoice: Content = isKOR_RABAT ? generateRabat(invoice.Fa!) : generateWiersze(invoice.Fa!);
   const docDefinition: TDocumentDefinitions = {
+    watermark: additionalData?.watermark,
     content: [
       ...generateNaglowek(invoice.Fa, additionalData),
       generateDaneFaKorygowanej(invoice.Fa),
@@ -50,6 +52,13 @@ export function generateFA2(invoice: Faktura, additionalData: AdditionalDataType
       generateWarunkiTransakcji(invoice.Fa?.WarunkiTransakcji),
       ...generateStopka(additionalData, invoice.Stopka, invoice.Naglowek, invoice.Fa?.WZ),
     ],
+    footer: (currentPage, pageCount) => {
+      return {
+        text: currentPage.toString() + ' z ' + pageCount,
+        alignment: Position.RIGHT,
+        margin: [0, 0, 40, 0],
+      };
+    },
     ...generateStyle(),
   };
 

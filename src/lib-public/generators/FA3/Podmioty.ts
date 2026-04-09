@@ -9,7 +9,7 @@ import { generatePodmiot3 } from './Podmiot3.js';
 import { generateDaneIdentyfikacyjneTPodmiot3Dto } from './Podmiot3Podmiot2k.js';
 import { generatePodmiotUpowazniony } from './PodmiotUpowazniony.js';
 import { Adres } from '../../types/fa1.types';
-import { generatePodmiot2Podmiot2K } from './Podmiot2Podmiot2k';
+import { generatePodmiot2Podmiot2K } from './Podmiot2Podmiot2k.js';
 
 export function generatePodmioty(invoice: Faktura): Content[] {
   const result: Content[] = [];

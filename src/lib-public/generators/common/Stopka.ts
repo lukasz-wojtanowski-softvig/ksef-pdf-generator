@@ -32,6 +32,7 @@ export function generateStopka(
   const rejestry: Content[] = generateRejestry(stopka);
   const informacje: Content[] = generateInformacje(stopka);
   const qrCode: Content[] = generateQRCodeData(additionalData);
+  const qr2Code: Content[] = generateQR2CodeData(additionalData);
   const zalaczniki: Content[] = !additionalData?.isMobile ? generateZalaczniki(zalacznik) : [];
 
   const result: Content = [
@@ -43,6 +44,7 @@ export function generateStopka(
     ...informacje,
     ...(zalaczniki.length ? zalaczniki : []),
     { stack: [...qrCode], unbreakable: true },
+    { stack: [...qr2Code], unbreakable: true },
     createSection(
       [
         {
@@ -50,7 +52,7 @@ export function generateStopka(
           margin: [0, 8, 0, 0],
         },
       ],
-      true,
+      false,
       [0, 0, 0, 0]
     ),
   ];
@@ -87,7 +89,9 @@ function generateRejestry(stopka?: Stopka): Content[] {
   const content: FormContentState = getContentTable<(typeof faWiersze)[0]>(
     [...definedHeader],
     faWiersze,
-    '*'
+    '*',
+    undefined,
+    30
   );
 
   if (content.fieldsWithValue.length && content.content) {
@@ -129,13 +133,12 @@ function generateQRCodeData(additionalData?: AdditionalDataTypes): Content[] {
           {
             stack: [
               qrCode,
-
               {
                 stack: [formatText(additionalData.nrKSeF ?? 'OFFLINE', FormatTyp.Default)],
                 width: 'auto',
-                alignment: 'center',
+                alignment: 'left',
                 marginLeft: 0,
-                marginRight: 65,
+                marginRight: 10,
                 marginTop: 10,
               } as ContentStack,
             ],
@@ -145,7 +148,7 @@ function generateQRCodeData(additionalData?: AdditionalDataTypes): Content[] {
             stack: [
               formatText(
                 'Nie możesz zeskanować kodu z obrazka? Kliknij w link weryfikacyjny i przejdź do weryfikacji faktury!',
-                FormatTyp.Value
+                FormatTyp.Label
               ),
               {
                 stack: [formatText(additionalData.qrCode, FormatTyp.Link)],
@@ -161,8 +164,8 @@ function generateQRCodeData(additionalData?: AdditionalDataTypes): Content[] {
       });
     }
   }
-  if (additionalData?.qrCode2 && !additionalData.nrKSeF) {
-    const qrCode: ContentQr | undefined = generateQRCode(additionalData.qrCode2);
+  if (additionalData?.qr2Code && !additionalData.nrKSeF) {
+    const qrCode: ContentQr | undefined = generateQRCode(additionalData.qr2Code);
 
     result.push(createHeader('Zweryfikuj wystawcę faktury!'));
     if (qrCode) {
@@ -180,7 +183,7 @@ function generateQRCodeData(additionalData?: AdditionalDataTypes): Content[] {
                 alignment: 'center',
                 marginLeft: 0,
                 // ECDSA certificate QR Code fit almost full width so we need to increase margin
-                marginRight: additionalData.qrCode2.length > 300 ? 28 : 18,
+                marginRight: additionalData.qr2Code.length > 300 ? 28 : 18,
                 marginTop: 10,
               } as ContentStack,
             ],
@@ -193,12 +196,58 @@ function generateQRCodeData(additionalData?: AdditionalDataTypes): Content[] {
                 FormatTyp.Value
               ),
               {
-                stack: [formatText(additionalData.qrCode2.substring(0, 150) + '...', FormatTyp.Link)],
+                stack: [formatText(additionalData.qr2Code.substring(0, 150) + '...', FormatTyp.Link)],
                 marginTop: 5,
               },
             ],
-            link: additionalData.qrCode2,
+            link: additionalData.qr2Code,
             noWrap: false,
+            margin: [10, (qrCode.fit ?? 120) / 2 - 30, 0, 0],
+            width: 'auto',
+          } as ContentStack,
+        ],
+      });
+    }
+  }
+  return createSection(result, true);
+}
+function generateQR2CodeData(additionalData?: AdditionalDataTypes): Content[] {
+  const result: Content = [];
+
+  if (additionalData?.qr2Code) {
+    const qrCode: ContentQr | undefined = generateQRCode(additionalData.qr2Code);
+
+    result.push(createHeader('Zweryfikuj dostawcę faktury'));
+    if (qrCode) {
+      result.push({
+        columns: [
+          {
+            stack: [
+              qrCode,
+              {
+                stack: [formatText('CERTYFIKAT', FormatTyp.Default)],
+                width: 'auto',
+                alignment: 'left',
+                marginLeft: 0,
+                marginRight: 10,
+                marginTop: 10,
+              } as ContentStack,
+            ],
+            width: 150,
+          } as ContentStack,
+          {
+            stack: [
+              formatText(
+                'Nie możesz zeskanować kodu z obrazka? Kliknij w link weryfikacyjny i przejdź do weryfikacji wystawcy faktury!',
+                FormatTyp.Label
+              ),
+              {
+                stack: [formatText(additionalData.qr2Code, FormatTyp.Link)],
+                marginTop: 5,
+                link: additionalData.qrCode,
+              },
+            ],
+
             margin: [10, (qrCode.fit ?? 120) / 2 - 30, 0, 0],
             width: 'auto',
           } as ContentStack,

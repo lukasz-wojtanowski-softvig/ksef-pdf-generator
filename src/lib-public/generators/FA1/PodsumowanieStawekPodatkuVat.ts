@@ -10,7 +10,7 @@ import {
 import FormatTyp from '../../../shared/enums/common.enum.js';
 import { Fa, Faktura, FP } from '../../types/fa1.types';
 import { TaxSummaryTypes } from '../../types/tax-summary.types';
-import { DEFAULT_TABLE_LAYOUT } from '../../../shared/consts/const.js';
+import { DEFAULT_TABLE_LAYOUT } from '../../../shared/consts/FA.const.js';
 
 export function generatePodsumowanieStawekPodatkuVat(faktura: Faktura): Content[] {
   const AnyP13P14_5Diff0: boolean =

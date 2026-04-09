@@ -57,7 +57,7 @@ export class CliApplication {
             additionalData.qrCode = options.qrCode;
           }
           if (options.qrCode2) {
-            additionalData.qrCode2 = options.qrCode2;
+            additionalData.qr2Code = options.qrCode2;
           }
 
           if (!this.invoiceGenerator) {

@@ -2,10 +2,10 @@ import { Content } from 'pdfmake/interfaces';
 import { createHeader, createLabelText, formatText, getValue, hasValue } from '../../../shared/PDF-functions.js';
 import FormatTyp from '../../../shared/enums/common.enum.js';
 import { Podmiot1 } from '../../types/fa3.types';
-import { generateAdres } from './Adres';
+import { generateAdres } from './Adres.js';
 import { generateDaneIdentyfikacyjneTPodmiot1Dto } from './PodmiotDaneIdentyfikacyjneTPodmiot1Dto.js';
 import { generateDaneKontaktowe } from './PodmiotDaneKontaktowe.js';
-import { TAXPAYER_STATUS } from '../../../shared/consts/const';
+import { TAXPAYER_STATUS } from '../../../shared/consts/FA.const.js';
 
 export function generatePodmiot1(podmiot1: Podmiot1): Content[] {
   const result: Content[] = createHeader('Sprzedawca');

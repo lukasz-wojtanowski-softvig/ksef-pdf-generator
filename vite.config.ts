@@ -36,6 +36,7 @@ export default defineConfig(({ mode }) => {
         provider: 'v8',
         reporter: ['text-summary', 'lcov', 'html'],
       },
+      setupFiles: ['src/shared/mocks/functions.mock.ts'],
     },
 
     plugins: [

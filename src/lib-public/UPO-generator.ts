@@ -1,11 +1,11 @@
-import pdfMake from 'pdfmake/build/pdfmake';
+import pdfMake from 'pdfmake/build/pdfmake.js';
 import { Upo } from './types/upo-v4_2.types';
 import { TDocumentDefinitions } from 'pdfmake/interfaces';
-import { generateStyle } from '../shared/PDF-functions';
-import { parseXML } from '../shared/XML-parser';
-import { Position } from '../shared/enums/common.enum';
-import { generateDokumentUPO } from './generators/UPO4_3/Dokumenty';
-import { generateNaglowekUPO } from './generators/UPO4_3/Naglowek';
+import { generateStyle } from '../shared/PDF-functions.js';
+import { parseXML } from '../shared/XML-parser.js';
+import { Position } from '../shared/enums/common.enum.js';
+import { generateDokumentUPO } from './generators/UPO4_3/Dokumenty.js';
+import { generateNaglowekUPO } from './generators/UPO4_3/Naglowek.js';
 
 export async function generatePDFUPO(file: File): Promise<Blob> {
   const upo = (await parseXML(file)) as Upo;
