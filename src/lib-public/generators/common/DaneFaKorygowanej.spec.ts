@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import * as PDFFunctions from '../../../shared/PDF-functions.js';
-import { TypKorekty } from '../../../shared/consts/const.js';
+import { TypKorekty } from '../../../shared/consts/FA.const.js';
 import { generateDaneFaKorygowanej } from './DaneFaKorygowanej.js';
 
 describe('generateDaneFaKorygowanej', () => {

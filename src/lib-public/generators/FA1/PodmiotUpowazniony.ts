@@ -13,7 +13,8 @@ import { PodmiotUpowazniony } from '../../types/fa1.types';
 import { generatePodmiotAdres } from './PodmiotAdres.js';
 import { generateDaneIdentyfikacyjne } from './PodmiotDaneIdentyfikacyjne.js';
 import { generateDaneKontaktowe } from './PodmiotDaneKontaktowe.js';
-import { getRolaUpowaznionegoString } from '../../../shared/generators/common/functions.js';
+import { translateMap } from '../../../shared/generators/common/functions.js';
+import { TRolaPodmiotuUpowaznionegoFA1 } from '../../../shared/consts/FA.const.js';
 
 export function generatePodmiotUpowazniony(podmiot: PodmiotUpowazniony | undefined): Content[] {
   if (!podmiot) {
@@ -24,7 +25,7 @@ export function generatePodmiotUpowazniony(podmiot: PodmiotUpowazniony | undefin
   const columnRight: Content[] = [];
 
   if (hasValue(podmiot.RolaPU)) {
-    columnLeft.push(createLabelText('Rola: ', getRolaUpowaznionegoString(podmiot.RolaPU, 1)));
+    columnLeft.push(createLabelText('Rola: ', translateMap(podmiot.RolaPU, TRolaPodmiotuUpowaznionegoFA1)));
   }
   if (hasValue(podmiot.NrEORI)) {
     columnLeft.push(createLabelText('Numer EORI: ', podmiot.NrEORI));

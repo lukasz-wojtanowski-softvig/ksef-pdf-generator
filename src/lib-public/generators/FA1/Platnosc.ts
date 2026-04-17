@@ -10,10 +10,11 @@ import {
 } from '../../../shared/PDF-functions.js';
 import { HeaderDefine } from '../../../shared/types/pdf-types.js';
 import { FP, Platnosc, PlatnosciCzesciowe, TerminyPlatnosci } from '../../types/fa1.types';
-import { getFormaPlatnosciString } from '../../../shared/generators/common/functions.js';
 import { generujRachunekBankowy } from './RachunekBankowy.js';
 import FormatTyp from '../../../shared/enums/common.enum.js';
 import { TableWithFields, TerminPlatnosciContent } from '../../types/fa1-additional-types.js';
+import { translateMap } from '../../../shared/generators/common/functions.js';
+import { FormaPlatnosci } from '../../../shared/consts/FA.const.js';
 
 export function generatePlatnosc(platnosc: Platnosc | undefined): Content {
   if (!platnosc) {
@@ -26,7 +27,7 @@ export function generatePlatnosc(platnosc: Platnosc | undefined): Content {
     {
       name: 'TerminPlatnosci',
       title: 'Termin płatności',
-      format: FormatTyp.Default,
+      format: FormatTyp.Date,
     },
   ];
 
@@ -34,7 +35,7 @@ export function generatePlatnosc(platnosc: Platnosc | undefined): Content {
     zaplataCzesciowaHeader.push({
       name: 'TerminPlatnosciOpis',
       title: 'Opis płatności',
-      format: FormatTyp.Default,
+      format: FormatTyp.Date,
     });
   }
 
@@ -42,7 +43,7 @@ export function generatePlatnosc(platnosc: Platnosc | undefined): Content {
     {
       name: 'DataZaplatyCzesciowej',
       title: 'Data zapłaty częściowej',
-      format: FormatTyp.Default,
+      format: FormatTyp.Date,
     },
     { name: 'KwotaZaplatyCzesciowej', title: 'Kwota zapłaty częściowej', format: FormatTyp.Currency },
     { name: 'FormaPlatnosci', title: 'Forma płatności', format: FormatTyp.FormOfPayment },
@@ -60,7 +61,7 @@ export function generatePlatnosc(platnosc: Platnosc | undefined): Content {
   }
 
   if (hasValue(platnosc.FormaPlatnosci)) {
-    table.push(createLabelText('Forma płatności: ', getFormaPlatnosciString(platnosc.FormaPlatnosci)));
+    table.push(createLabelText('Forma płatności: ', translateMap(platnosc.FormaPlatnosci, FormaPlatnosci)));
   } else {
     if (platnosc.OpisPlatnosci?._text) {
       table.push(createLabelText('Forma płatności: ', 'Płatność inna'));

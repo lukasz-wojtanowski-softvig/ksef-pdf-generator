@@ -9,13 +9,14 @@ import {
 } from '../../../shared/PDF-functions.js';
 import FormatTyp from '../../../shared/enums/common.enum.js';
 import { Podmiot3Podmiot2KDto } from '../../types/fa2-additional-types.js';
-import { getRolaString } from '../../../shared/generators/common/functions.js';
 import { generatePodmiotAdres } from './PodmiotAdres.js';
 import { generateDaneIdentyfikacyjneTPodmiot2Dto } from './PodmiotDaneIdentyfikacyjneTPodmiot2Dto.js';
 import { generateDaneKontaktowe } from './PodmiotDaneKontaktowe.js';
 import { Podmiot1DaneKontaktowe, Podmiot3 } from '../../types/fa3.types';
 import { Podmiot2K } from '../../types/fa2.types';
 import { Adres } from '../../types/fa1.types';
+import { FA3RolaPodmiotu3 } from '../../../shared/consts/FA.const.js';
+import { translateMap } from '../../../shared/generators/common/functions.js';
 
 export function generateDaneIdentyfikacyjneTPodmiot3Dto(
   podmiot2KDto: Podmiot3Podmiot2KDto | undefined,
@@ -41,7 +42,7 @@ export function generateDaneIdentyfikacyjneTPodmiot3Dto(
     result.push(
       ...createHeader('Dane identyfikacyjne'),
       createLabelText('Numer EORI: ', podmiot1.NrEORI),
-      createLabelText('Rola: ', getRolaString(podmiot1.Rola, 3)),
+      createLabelText('Rola: ', translateMap(podmiot1.Rola, FA3RolaPodmiotu3)),
       createLabelText('Rola inna: ', podmiot1.OpisRoli),
       createLabelText('Udział: ', podmiot1.Udzial, FormatTyp.Percentage)
     );

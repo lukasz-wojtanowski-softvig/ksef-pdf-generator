@@ -3,14 +3,14 @@ import { Upo } from './types/upo-v4_2.types';
 import { TDocumentDefinitions } from 'pdfmake/interfaces';
 import { generateStyle } from '../shared/PDF-functions.js';
 import { generateNaglowekUPO } from './generators/UPO4_2/Naglowek.js';
-import { generateDokumnetUPO } from './generators/UPO4_2/Dokumenty.js';
 import { parseXML } from '../shared/XML-parser.js';
 import { Position } from '../shared/enums/common.enum.js';
+import { generateDokumentUPO } from './generators/UPO4_3/Dokumenty.js';
 
 export async function generatePDFUPO(file: File): Promise<Blob> {
   const upo = (await parseXML(file)) as Upo;
   const docDefinition: TDocumentDefinitions = {
-    content: [generateNaglowekUPO(upo.Potwierdzenie!), generateDokumnetUPO(upo.Potwierdzenie!)],
+    content: [generateNaglowekUPO(upo.Potwierdzenie!), generateDokumentUPO(upo.Potwierdzenie!)],
     ...generateStyle(),
     pageSize: 'A4',
     pageOrientation: 'landscape',

@@ -9,7 +9,7 @@ import {
   getValue,
 } from '../../../shared/PDF-functions.js';
 import { HeaderDefine } from '../../../shared/types/pdf-types.js';
-import { TRodzajFaktury } from '../../../shared/consts/const.js';
+import { TRodzajFaktury } from '../../../shared/consts/FA.const.js';
 import { FP, Zamowienie } from '../../types/fa2.types';
 import FormatTyp, { Position } from '../../../shared/enums/common.enum.js';
 import { TableWithFields } from '../../types/fa1-additional-types.js';
@@ -103,13 +103,13 @@ export function generateZamowienie(
       table.push(content.content);
     }
   }
-  const ceny = `Faktura wystawiona w cenach ${content.fieldsWithValue.includes('P_11') ? 'netto' : 'brutto'} w walucie ${KodWaluty}`;
+  const ceny = `Faktura wystawiona w walucie ${KodWaluty}`;
   let opis: Content = '';
 
   if (Number(p_15) > 0 && rodzajFaktury == TRodzajFaktury.ZAL) {
     opis = {
       stack: createLabelTextArray([
-        { value: 'Otrzymana kwota zapłaty (zaliczki): ', formatTyp: FormatTyp.LabelGreater },
+        { value: 'Kwota zapłaty (zaliczki) dokumentowana fakturą: ', formatTyp: FormatTyp.LabelGreater },
         { value: p_15, formatTyp: FormatTyp.CurrencyGreater },
       ]),
       alignment: Position.RIGHT,
@@ -122,7 +122,10 @@ export function generateZamowienie(
   ) {
     opis = {
       stack: createLabelTextArray([
-        { value: 'Kwota należności ogółem: ', formatTyp: FormatTyp.LabelGreater },
+        {
+          value: 'Korekta kwoty zapłaty (zaliczki) dokumentowana fakturą: ',
+          formatTyp: FormatTyp.LabelGreater,
+        },
         { value: p_15, formatTyp: FormatTyp.CurrencyGreater },
       ]),
       alignment: Position.RIGHT,

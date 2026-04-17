@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import * as PDFFunctions from '../../../shared/PDF-functions';
-import FormatTyp from '../../../shared/enums/common.enum';
+import * as PDFFunctions from '../../../shared/PDF-functions.js';
+import FormatTyp from '../../../shared/enums/common.enum.js';
 import { Potwierdzenie } from '../../types/upo-v4_3.types';
-import { generateDokumentUPO } from './Dokumenty';
+import { generateDokumentUPO } from './Dokumenty.js';
 
 vi.mock('../../../shared/PDF-functions', () => ({
   formatText: vi.fn(),

@@ -38,6 +38,9 @@ export class BrowserEnvironmentInitializer implements IEnvironmentInitializer {
 
     (global as any).window = this.dom;
     (global as any).document = this.dom.document;
+    if (typeof navigator === 'undefined') {
+      (global as any).navigator = this.dom.navigator;
+    }
     (global as any).FileReader = this.dom.FileReader;
     (global as any).Blob = this.dom.Blob;
     (global as any).File = this.dom.File;

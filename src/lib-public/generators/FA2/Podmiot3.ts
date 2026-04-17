@@ -10,8 +10,9 @@ import { Podmiot3 } from '../../types/fa2.types';
 import { generateAdres } from './Adres.js';
 import { generateDaneIdentyfikacyjneTPodmiot3Dto } from './PodmiotDaneIdentyfikacyjneTPodmiot3Dto.js';
 import { generateDaneKontaktowe } from './PodmiotDaneKontaktowe.js';
-import { getRolaString } from '../../../shared/generators/common/functions.js';
+import { translateMap } from '../../../shared/generators/common/functions.js';
 import FormatTyp from '../../../shared/enums/common.enum.js';
+import { FA2RolaPodmiotu3 } from '../../../shared/consts/FA.const.js';
 
 export function generatePodmiot3(podmiot: Podmiot3, index: number): Content[] {
   const result: Content[] = [];
@@ -22,7 +23,7 @@ export function generatePodmiot3(podmiot: Podmiot3, index: number): Content[] {
     createLabelText('Identyfikator nabywcy: ', podmiot.IDNabywcy),
     createLabelText('Numer EORI: ', podmiot.NrEORI),
     ...generateDaneIdentyfikacyjneTPodmiot3Dto(podmiot.DaneIdentyfikacyjne),
-    createLabelText('Rola: ', getRolaString(podmiot.Rola, 2)),
+    createLabelText('Rola: ', translateMap(podmiot.Rola, FA2RolaPodmiotu3)),
     createLabelText('Rola inna: ', podmiot.OpisRoli),
     createLabelText('Udział: ', podmiot.Udzial, [FormatTyp.Percentage]),
   ];

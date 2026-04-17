@@ -9,7 +9,7 @@ import {
 } from '../../../shared/PDF-functions.js';
 import { Adnotacje } from '../../types/fa1.types';
 import FormatTyp from '../../../shared/enums/common.enum.js';
-import { DEFAULT_TABLE_LAYOUT } from '../../../shared/consts/const.js';
+import { DEFAULT_TABLE_LAYOUT } from '../../../shared/consts/FA.const.js';
 
 export function generateAdnotacje(adnotacje?: Adnotacje): Content[] {
   const result: Content[] = [];

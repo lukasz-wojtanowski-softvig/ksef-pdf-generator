@@ -1,17 +1,20 @@
 import { Content } from 'pdfmake/interfaces';
-import { TypKorekty } from '../../../shared/consts/const.js';
+import { TRodzajFaktury, TypKorekty } from '../../../shared/consts/FA.const.js';
+import { FARRTypKorekty } from '../../../shared/consts/FARR.const.js';
 import {
   createHeader,
   createLabelText,
   createSection,
   generateTwoColumns,
   getTable,
+  getValue,
 } from '../../../shared/PDF-functions.js';
 import { DaneFaKorygowanej, Fa as Fa1 } from '../../types/fa1.types';
 import { Fa as Fa2 } from '../../types/fa2.types';
 import { Fa as Fa3 } from '../../types/fa3.types';
+import { FakturaRR as FaRR } from '../../types/FaRR.types';
 
-export function generateDaneFaKorygowanej(invoice?: Fa1 | Fa2 | Fa3): Content[] {
+export function generateDaneFaKorygowanej(invoice?: Fa1 | Fa2 | Fa3 | FaRR): Content[] {
   const result: Content[] = [];
   let firstColumn: Content[] = [];
   let secondColumn: Content[] = [];
@@ -29,7 +32,13 @@ export function generateDaneFaKorygowanej(invoice?: Fa1 | Fa2 | Fa3): Content[] 
       );
     }
     if (invoice.TypKorekty?._text) {
-      firstColumn.push(createLabelText('Typ skutku korekty: ', TypKorekty[invoice.TypKorekty._text]));
+      const isFaRR = [TRodzajFaktury.VAT_RR, TRodzajFaktury.KOR_VAT_RR].includes(
+        getValue(invoice?.RodzajFaktury) as string
+      );
+      const typKorekty = getValue(invoice.TypKorekty) as string;
+      firstColumn.push(
+        createLabelText('Typ skutku korekty: ', isFaRR ? FARRTypKorekty[typKorekty] : TypKorekty[typKorekty])
+      );
     }
 
     if (firstColumn.length) {
@@ -68,7 +77,9 @@ export function generateDaneFaKorygowanej(invoice?: Fa1 | Fa2 | Fa3): Content[] 
   }
 
   if (firstColumn.length && secondColumn.length) {
-    result.push(createSection([generateTwoColumns(firstColumn, secondColumn)], previousSection));
+    result.push(
+      createSection([generateTwoColumns(firstColumn, secondColumn, undefined, false)], previousSection)
+    );
   }
   return createSection(result, true);
 }
