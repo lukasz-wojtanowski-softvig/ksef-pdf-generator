@@ -102,6 +102,25 @@ Biblioteka wspiera lokalizację, poprzez użycie biblioteki i18next. Pliki z tł
 
 ---
 
+### 🆕 Tryb CLI
+
+Biblioteka obsługuje teraz również **tryb linii poleceń (CLI)**, który umożliwia generowanie PDF bez uruchamiania aplikacji webowej.  
+Szczegóły znajdziesz w [CLI-README.md](./src/cli/CLI-README.md).
+
+**Szybki start CLI:**
+```bash
+# Budowanie CLI
+npm run build:cli
+
+# Generowanie faktury PDF
+node dist/cli/index.js invoice examples/invoice.xml output/faktura.pdf
+
+# Generowanie UPO PDF
+node dist/cli/index.js upo examples/upo.xml output/upo.pdf
+```
+
+---
+
 ### 1. Nazewnictwo zmiennych i metod
 
 - **Polsko-angielskie nazwy** stosowane w zmiennych, typach i metodach wynikają bezpośrednio ze struktury pliku schemy
