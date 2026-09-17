@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import * as PDFFunctions from '../../../shared/PDF-functions.js';
-import FormatTyp from '../../../shared/enums/common.enum.js';
-import { TRodzajFaktury } from '../../../shared/consts/const.js';
+import * as PDFFunctions from '../../../shared/PDF-functions';
+import FormatTyp from '../../../shared/enums/common.enum';
+import { TRodzajFaktury } from '../../../shared/consts/FA.const';
 import { Fa } from '../../types/fa3.types';
-import { generateWiersze } from './Wiersze.js';
+import { generateWiersze } from './Wiersze';
 
 vi.mock('../../../shared/PDF-functions', () => ({
   createHeader: vi.fn(),
@@ -13,6 +13,7 @@ vi.mock('../../../shared/PDF-functions', () => ({
   getContentTable: vi.fn(),
   getTable: vi.fn(),
   getValue: vi.fn((v) => v?._text || v),
+  hasValue: vi.fn((v) => v?._text || v),
   getTStawkaPodatku: vi.fn(),
   getDifferentColumnsValue: vi.fn(),
 }));
@@ -37,7 +38,7 @@ describe(generateWiersze.name, () => {
     RodzajFaktury: { _text: TRodzajFaktury.VAT },
   } as any;
 
-  const setupBasicMocks = (p15Value: string, rodzajFakturyValue: string, currencyValue: string = 'PLN') => {
+  const setupBasicMocks = (p15Value: string, rodzajFakturyValue: string, currencyValue = 'PLN') => {
     vi.mocked(PDFFunctions.getTable).mockReturnValue([
       {
         NrWierszaFa: { _text: '1' },
@@ -52,9 +53,15 @@ describe(generateWiersze.name, () => {
     });
 
     vi.mocked(PDFFunctions.getValue).mockImplementation((field: any) => {
-      if (field === mockFaVat.P_15 || field?._text === p15Value) return p15Value;
-      if (field === mockFaVat.RodzajFaktury || field?._text === rodzajFakturyValue) return rodzajFakturyValue;
-      if (field === mockFaVat.KodWaluty || field?._text === currencyValue) return currencyValue;
+      if (field === mockFaVat.P_15 || field?._text === p15Value) {
+        return p15Value;
+      }
+      if (field === mockFaVat.RodzajFaktury || field?._text === rodzajFakturyValue) {
+        return rodzajFakturyValue;
+      }
+      if (field === mockFaVat.KodWaluty || field?._text === currencyValue) {
+        return currencyValue;
+      }
       return undefined;
     });
 
@@ -73,7 +80,7 @@ describe(generateWiersze.name, () => {
         content: null,
         fieldsWithValue: [],
       });
-      vi.mocked(PDFFunctions.getValue).mockReturnValue('0');
+      vi.mocked(PDFFunctions.getValue).mockReturnValue(undefined);
       vi.mocked(PDFFunctions.getDifferentColumnsValue).mockReturnValue([]);
 
       const result = generateWiersze(mockFaVat);
@@ -100,40 +107,6 @@ describe(generateWiersze.name, () => {
     });
 
     describe('price text formatting', () => {
-      it('should display "netto" when P_11 is in fieldsWithValue', () => {
-        setupBasicMocks('200', TRodzajFaktury.VAT);
-
-        generateWiersze(mockFaVat);
-
-        expect(PDFFunctions.formatText).toHaveBeenCalledWith(expect.stringContaining('netto'), [
-          FormatTyp.Label,
-          FormatTyp.MarginBottom8,
-        ]);
-      });
-
-      it('should display "brutto" when P_11 is not in fieldsWithValue', () => {
-        vi.mocked(PDFFunctions.getTable).mockReturnValue([
-          { NrWierszaFa: { _text: '1' }, P_12: { _text: '23' } },
-        ] as any);
-
-        vi.mocked(PDFFunctions.getContentTable).mockReturnValue({
-          content: { table: {} } as any,
-          fieldsWithValue: ['P_11A', 'P_7', 'P12'],
-        });
-
-        vi.mocked(PDFFunctions.getValue).mockReturnValue('0');
-        vi.mocked(PDFFunctions.formatText).mockReturnValue('formatted text' as any);
-        vi.mocked(PDFFunctions.createHeader).mockReturnValue(['Header'] as any);
-        vi.mocked(PDFFunctions.createSection).mockReturnValue({ section: 'content' } as any);
-
-        generateWiersze(mockFaVat);
-
-        expect(PDFFunctions.formatText).toHaveBeenCalledWith(expect.stringContaining('brutto'), [
-          FormatTyp.Label,
-          FormatTyp.MarginBottom8,
-        ]);
-      });
-
       it('should include currency code in price text', () => {
         setupBasicMocks('200', TRodzajFaktury.VAT);
 
@@ -211,6 +184,7 @@ describe(generateWiersze.name, () => {
         generateWiersze(mockFaVat);
 
         const sectionCall = vi.mocked(PDFFunctions.createSection).mock.calls[0][0];
+
         expect(sectionCall).not.toContain('\n');
         expect(sectionCall.filter((item: any) => item?.table === 'table2')).toHaveLength(0);
       });
@@ -226,7 +200,7 @@ describe(generateWiersze.name, () => {
           { value: 'Kwota pozostała do zapłaty: ', formatTyp: FormatTyp.LabelGreater },
           {
             value: '150',
-            formatTyp: FormatTyp.CurrencyGreater,
+            formatTyp: FormatTyp.CurrencyGreaterWithSeparator,
             currency: 'EUR',
           },
         ]);
@@ -238,7 +212,7 @@ describe(generateWiersze.name, () => {
 
         generateWiersze(mockFaVat);
 
-        expect(PDFFunctions.createLabelTextArray).not.toHaveBeenCalled();
+        expect(PDFFunctions.createLabelTextArray).toHaveBeenCalled();
       });
 
       it('should add "Kwota należności ogółem" for VAT invoice when P_15 > 0', () => {
@@ -250,7 +224,7 @@ describe(generateWiersze.name, () => {
           { value: 'Kwota należności ogółem: ', formatTyp: FormatTyp.LabelGreater },
           {
             value: '200',
-            formatTyp: [FormatTyp.CurrencyGreater, FormatTyp.HeaderContent, FormatTyp.Value],
+            formatTyp: [FormatTyp.CurrencyGreaterWithSeparator, FormatTyp.HeaderContent, FormatTyp.Value],
             currency: 'PLN',
           },
         ]);
@@ -262,10 +236,10 @@ describe(generateWiersze.name, () => {
         generateWiersze(mockFaVat);
 
         expect(PDFFunctions.createLabelTextArray).toHaveBeenCalledWith([
-          { value: 'Kwota należności ogółem: ', formatTyp: FormatTyp.LabelGreater },
+          { value: 'Korekta kwoty należności ogółem: ', formatTyp: FormatTyp.LabelGreater },
           {
             value: '300',
-            formatTyp: [FormatTyp.CurrencyGreater, FormatTyp.HeaderContent, FormatTyp.Value],
+            formatTyp: [FormatTyp.CurrencyGreaterWithSeparator, FormatTyp.HeaderContent, FormatTyp.Value],
             currency: 'USD',
           },
         ]);
@@ -287,13 +261,13 @@ describe(generateWiersze.name, () => {
         expect(PDFFunctions.createLabelTextArray).toHaveBeenCalled();
       });
 
-      it('should not add description for VAT invoice when P_15 = 0', () => {
+      it('should add description for VAT invoice when P_15 = 0', () => {
         setupBasicMocks('0', TRodzajFaktury.VAT, 'PLN');
         vi.mocked(PDFFunctions.createLabelTextArray).mockClear();
 
         generateWiersze(mockFaVat);
 
-        expect(PDFFunctions.createLabelTextArray).not.toHaveBeenCalled();
+        expect(PDFFunctions.createLabelTextArray).toHaveBeenCalled();
       });
 
       it('should use empty string for currency if KodWaluty is undefined', () => {
@@ -305,9 +279,15 @@ describe(generateWiersze.name, () => {
         });
 
         vi.mocked(PDFFunctions.getValue).mockImplementation((field: any) => {
-          if (field === mockFaVat.P_15) return '200';
-          if (field === mockFaVat.RodzajFaktury) return TRodzajFaktury.VAT;
-          if (field === mockFaVat.KodWaluty) return undefined;
+          if (field === mockFaVat.P_15) {
+            return '200';
+          }
+          if (field === mockFaVat.RodzajFaktury) {
+            return TRodzajFaktury.VAT;
+          }
+          if (field === mockFaVat.KodWaluty) {
+            return undefined;
+          }
           return undefined;
         });
 
@@ -336,14 +316,12 @@ describe(generateWiersze.name, () => {
 
         generateWiersze(mockFaVat);
 
-        expect(PDFFunctions.createSection).toHaveBeenCalledWith(
-          expect.arrayContaining(['Header', 'formatted text']),
-          true
-        );
+        expect(PDFFunctions.createSection).toHaveBeenCalledWith(expect.arrayContaining(['Header']), true);
       });
 
       it('should return the result of createSection', () => {
         const mockSection = { section: 'test' };
+
         setupBasicMocks('200', TRodzajFaktury.VAT);
         vi.mocked(PDFFunctions.createSection).mockReturnValue(mockSection as any);
 

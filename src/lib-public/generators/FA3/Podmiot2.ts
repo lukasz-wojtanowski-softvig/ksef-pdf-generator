@@ -1,18 +1,19 @@
 import { Content } from 'pdfmake/interfaces';
-import { createHeader, createLabelText, formatText, getTable } from '../../../shared/PDF-functions.js';
-import FormatTyp from '../../../shared/enums/common.enum.js';
+import { createHeader, createLabelText, formatText, getValue } from '../../../shared/PDF-functions';
+import FormatTyp from '../../../shared/enums/common.enum';
 import { Podmiot2 } from '../../types/fa3.types';
-import { generateAdres } from './Adres.js';
-import { generateDaneIdentyfikacyjneTPodmiot2Dto } from './PodmiotDaneIdentyfikacyjneTPodmiot2Dto.js';
-import { generateDaneKontaktowe } from './PodmiotDaneKontaktowe.js';
-import { DaneIdentyfikacyjneTPodmiot2Dto } from '../../types/fa2-additional-types.js';
+import { generateAdres } from './Adres';
+import { generateDaneIdentyfikacyjneTPodmiot2Dto } from './PodmiotDaneIdentyfikacyjneTPodmiot2Dto';
+import { generateDaneKontaktowe } from './PodmiotDaneKontaktowe';
+import { DaneIdentyfikacyjneTPodmiot2Dto } from '../../types/fa2-additional-types';
+import i18n from 'i18next';
 
 export function generatePodmiot2(podmiot2: Podmiot2): Content[] {
-  const result: Content[] = createHeader('Nabywca');
+  const result: Content[] = createHeader(i18n.t('invoice.subject2.buyer'));
 
   result.push(
-    createLabelText('Identyfikator nabywcy: ', podmiot2.IDNabywcy),
-    createLabelText('Numer EORI: ', podmiot2.NrEORI)
+    createLabelText(i18n.t('invoice.subject2.getterId'), podmiot2.IDNabywcy),
+    createLabelText(i18n.t('invoice.subject2.eoriNumber'), podmiot2.NrEORI)
   );
   if (podmiot2.DaneIdentyfikacyjne) {
     result.push(
@@ -23,37 +24,50 @@ export function generatePodmiot2(podmiot2: Podmiot2): Content[] {
   }
 
   if (podmiot2.Adres) {
-    result.push(formatText('Adres', [FormatTyp.Label, FormatTyp.LabelMargin]), generateAdres(podmiot2.Adres));
+    result.push(
+      formatText(i18n.t('invoice.subject2.address'), [FormatTyp.Label, FormatTyp.LabelMargin]),
+      generateAdres(podmiot2.Adres)
+    );
   }
   if (podmiot2.AdresKoresp) {
     result.push(
-      formatText('Adres do korespondencji', [FormatTyp.Label, FormatTyp.LabelMargin]),
+      formatText(i18n.t('invoice.subject2.mailingAddress'), [FormatTyp.Label, FormatTyp.LabelMargin]),
       ...generateAdres(podmiot2.AdresKoresp)
     );
   }
   if (podmiot2.DaneKontaktowe || podmiot2.NrKlienta) {
     result.push(
-      formatText('Dane kontaktowe', [FormatTyp.Label, FormatTyp.LabelMargin]),
+      formatText(i18n.t('invoice.subject2.contactDetails'), [FormatTyp.Label, FormatTyp.LabelMargin]),
       ...generateDaneKontaktowe(podmiot2.DaneKontaktowe ?? []),
-      createLabelText('Numer klienta: ', podmiot2.NrKlienta)
+      createLabelText(i18n.t('invoice.subject2.customerNumber'), podmiot2.NrKlienta)
     );
-
-    const daneKontaktowe = getTable(podmiot2.DaneKontaktowe);
-
-    if (daneKontaktowe.length) {
-      result.push(
-        createLabelText(
-          'Faktura dotyczy jednostki podrzędnej JST: ',
-          daneKontaktowe[0].JST?._text === '1' ? 'TAK' : 'NIE'
-        )
-      );
-      result.push(
-        createLabelText(
-          'Faktura dotyczy członka grupy GV: ',
-          daneKontaktowe[0].GV?._text === '1' ? 'TAK' : 'NIE'
-        )
-      );
-    }
   }
+
+  if (podmiot2?.JST) {
+    result.push(
+      createLabelText(
+        i18n.t('invoice.subject2.jst'),
+        i18n.t(
+          getValue(podmiot2?.JST)?.toString().trim() === '1' ? 'invoice.subject2.yes' : 'invoice.subject2.no'
+        ),
+        FormatTyp.Default,
+        { marginTop: 8 }
+      )
+    );
+  }
+
+  if (podmiot2?.GV) {
+    result.push(
+      createLabelText(
+        i18n.t('invoice.subject2.gv'),
+        i18n.t(
+          getValue(podmiot2?.GV)?.toString().trim() === '1' ? 'invoice.subject2.yes' : 'invoice.subject2.no'
+        ),
+        FormatTyp.Default,
+        podmiot2?.JST ? {} : { marginTop: 8 }
+      )
+    );
+  }
+
   return result;
 }

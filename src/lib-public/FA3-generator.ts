@@ -1,33 +1,38 @@
-import pdfMake, { TCreatedPdf } from 'pdfmake/build/pdfmake.js';
-import pdfFonts from 'pdfmake/build/vfs_fonts.js';
+import pdfMake, { TCreatedPdf } from 'pdfmake/build/pdfmake';
 import { Content, TDocumentDefinitions } from 'pdfmake/interfaces';
-import { generateStyle, getValue, hasValue } from '../shared/PDF-functions.js';
-import { TRodzajFaktury } from '../shared/consts/const.js';
-import { generateAdnotacje } from './generators/FA3/Adnotacje.js';
-import { generateDodatkoweInformacje } from './generators/FA3/DodatkoweInformacje.js';
-import { generatePlatnosc } from './generators/FA3/Platnosc.js';
-import { generatePodmioty } from './generators/FA3/Podmioty.js';
-import { generatePodsumowanieStawekPodatkuVat } from './generators/FA3/PodsumowanieStawekPodatkuVat.js';
-import { generateRabat } from './generators/FA3/Rabat.js';
-import { generateSzczegoly } from './generators/FA3/Szczegoly.js';
-import { generateWarunkiTransakcji } from './generators/FA3/WarunkiTransakcji.js';
-import { generateWiersze } from './generators/FA3/Wiersze.js';
-import { generateZamowienie } from './generators/FA3/Zamowienie.js';
-import { generateDaneFaKorygowanej } from './generators/common/DaneFaKorygowanej.js';
-import { generateNaglowek } from './generators/common/Naglowek.js';
-import { generateRozliczenie } from './generators/common/Rozliczenie.js';
-import { generateStopka } from './generators/common/Stopka.js';
+import { generateStyle, getValue, hasValue } from '@shared/PDF-functions';
+import { generateAdnotacje } from './generators/FA3/Adnotacje';
+import { generateDodatkoweInformacje } from './generators/FA3/DodatkoweInformacje';
+import { generatePlatnosc } from './generators/FA3/Platnosc';
+import { generatePodmioty } from './generators/FA3/Podmioty';
+import { generatePodsumowanieStawekPodatkuVat } from './generators/FA3/PodsumowanieStawekPodatkuVat';
+import { generateRabat } from './generators/FA3/Rabat';
+import { generateSzczegoly } from './generators/FA3/Szczegoly';
+import { generateWarunkiTransakcji } from './generators/FA3/WarunkiTransakcji';
+import { generateWiersze } from './generators/FA3/Wiersze';
+import { generateZamowienie } from './generators/FA3/Zamowienie';
+import { generateDaneFaKorygowanej } from './generators/common/DaneFaKorygowanej';
+import { generateNaglowek } from './generators/common/Naglowek';
+import { generateRozliczenie } from './generators/common/Rozliczenie';
+import { generateStopka } from './generators/common/Stopka';
 import { Faktura } from './types/fa3.types';
-import { ZamowienieKorekta } from './enums/invoice.enums.js';
+import { ZamowienieKorekta } from './enums/invoice.enums';
 import { AdditionalDataTypes } from './types/common.types';
+import { generateWatermark } from '@shared/consts/watermark';
+import pdfFonts from 'pdfmake/build/vfs_fonts';
+import { TRodzajFaktury } from '@shared/consts/FA.const';
+import { Position } from '@shared/enums/common.enum';
+import i18n from 'i18next';
 
-pdfMake.vfs = pdfFonts.vfs;
+pdfMake.addVirtualFileSystem(pdfFonts);
 
 export function generateFA3(invoice: Faktura, additionalData: AdditionalDataTypes): TCreatedPdf {
   const isKOR_RABAT: boolean =
     invoice.Fa?.RodzajFaktury?._text == TRodzajFaktury.KOR && hasValue(invoice.Fa?.OkresFaKorygowanej);
   const rabatOrRowsInvoice: Content = isKOR_RABAT ? generateRabat(invoice.Fa!) : generateWiersze(invoice.Fa!);
+
   const docDefinition: TDocumentDefinitions = {
+    ...generateWatermark(additionalData?.watermark),
     content: [
       ...generateNaglowek(invoice.Fa, additionalData, invoice.Zalacznik),
       generateDaneFaKorygowanej(invoice.Fa),
@@ -50,6 +55,13 @@ export function generateFA3(invoice: Faktura, additionalData: AdditionalDataType
       generateWarunkiTransakcji(invoice.Fa?.WarunkiTransakcji),
       ...generateStopka(additionalData, invoice.Stopka, invoice.Naglowek, invoice.Fa?.WZ, invoice.Zalacznik),
     ],
+    footer: (currentPage, pageCount) => {
+      return {
+        text: `${currentPage.toString()} ${i18n.t('invoice.footer.pagesTotal')} ${pageCount}`,
+        alignment: Position.RIGHT,
+        margin: [0, 0, 40, 0],
+      };
+    },
     ...generateStyle(),
   };
 

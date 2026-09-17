@@ -1,5 +1,6 @@
-import { FP as FP2 } from './fa2.types';
 import { FP as FP3 } from './fa3.types';
+import { FP as FP2 } from './fa2.types';
+import { pl } from '../i18n/lang/pl';
 
 interface FA2FakturaZaliczkowaDataSpozaKSeF {
   NrKSeFZN: FP2;
@@ -23,8 +24,14 @@ export type FA3FakturaZaliczkowaData = FA3FakturaZaliczkowaDataSpozaKSeF | FA3Fa
 export type FA2FakturaZaliczkowaData = FA2FakturaZaliczkowaDataSpozaKSeF | FA2FakturaZaliczkowaDataZKSeF;
 
 export interface AdditionalDataTypes {
-  nrKSeF?: string;
+  nrKSeF: string;
+  acDate?: string;
   qrCode?: string;
-  qrCode2?: string;
+  qr2Code?: string;
   isMobile?: boolean;
+  watermark?: string;
 }
+
+export type TranslationKey<T> = {
+  [K in keyof T]: T[K] extends object ? TranslationKey<T[K]> : string;
+};

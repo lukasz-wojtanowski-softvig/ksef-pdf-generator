@@ -1,5 +1,5 @@
 import { Content, ContentTable, ContentText, TableCell } from 'pdfmake/interfaces';
-import { DEFAULT_TABLE_LAYOUT, TableDataType } from '../../../shared/consts/const.js';
+import { DEFAULT_TABLE_LAYOUT, TableDataType } from '../../../shared/consts/FA.const';
 import {
   createHeader,
   createLabelText,
@@ -9,11 +9,13 @@ import {
   getContentTable,
   getTable,
   hasValue,
-} from '../../../shared/PDF-functions.js';
-import { HeaderDefine } from '../../../shared/types/pdf-types.js';
+  makeBreakable,
+} from '../../../shared/PDF-functions';
+import { HeaderDefine } from '../../../shared/types/pdf-types';
 import { BlokDanych, FP, Kol, MetaDane, Tabela, TMetaDane, Wiersz, Zalacznik } from '../../types/fa3.types';
-import FormatTyp from '../../../shared/enums/common.enum.js';
+import FormatTyp from '../../../shared/enums/common.enum';
 import { FormContentState } from '../../../shared/types/additional-data.types';
+import i18n from 'i18next';
 
 export function generateZalaczniki(zalacznik?: Zalacznik): Content[] {
   if (!getTable(zalacznik?.BlokDanych).length) {
@@ -22,10 +24,10 @@ export function generateZalaczniki(zalacznik?: Zalacznik): Content[] {
 
   const result: Content[] = [];
   const definedHeader: HeaderDefine[] = [
-    { name: 'PelnaNazwa', title: 'Pełna nazwa', format: FormatTyp.Default },
-    { name: 'KRS', title: 'KRS', format: FormatTyp.Default },
-    { name: 'REGON', title: 'REGON', format: FormatTyp.Default },
-    { name: 'BDO', title: 'BDO', format: FormatTyp.Default },
+    { name: 'PelnaNazwa', title: i18n.t('invoice.registers.fullName'), format: FormatTyp.Default },
+    { name: 'KRS', title: i18n.t('invoice.registers.krs'), format: FormatTyp.Default },
+    { name: 'REGON', title: i18n.t('invoice.registers.regon'), format: FormatTyp.Default },
+    { name: 'BDO', title: i18n.t('invoice.registers.bdo'), format: FormatTyp.Default },
   ];
   const faWiersze: BlokDanych[] = getTable(zalacznik?.BlokDanych ?? []);
   const content: FormContentState = getContentTable<(typeof faWiersze)[0]>(
@@ -34,20 +36,22 @@ export function generateZalaczniki(zalacznik?: Zalacznik): Content[] {
     '*'
   );
 
-  result.push(createHeader('Załącznik do Faktury VAT'));
+  result.push(createHeader(i18n.t('invoice.attachment.header')));
 
   getTable(zalacznik?.BlokDanych).forEach((blok: BlokDanych, index: number): void => {
-    result.push(createSubHeader(`Szczegółowe dane załącznika (${index + 1})`));
+    result.push(createSubHeader(i18n.t('invoice.attachment.details', { index: index + 1 })));
     if (blok.ZNaglowek) {
       result.push(
-        createLabelText('Nagłówek bloku danych: ', blok.ZNaglowek, FormatTyp.Value, { marginBottom: 8 })
+        createLabelText(i18n.t('invoice.attachment.blockHeader'), blok.ZNaglowek, FormatTyp.Value, {
+          marginBottom: 8,
+        })
       );
     }
     if (getTable(blok.MetaDane)?.length) {
       result.push(generateKluczWartosc(getTable(blok.MetaDane)));
     }
     if (blok.Tekst?.Akapit) {
-      result.push(createLabelText('Opis: ', ' '));
+      result.push(createLabelText(i18n.t('invoice.attachment.description'), ' '));
       getTable(blok.Tekst.Akapit).forEach((text: FP): void => {
         if (hasValue(text)) {
           result.push(formatText(text._text, FormatTyp.Value));
@@ -74,10 +78,15 @@ export function generateZalaczniki(zalacznik?: Zalacznik): Content[] {
           });
         }
         if (tabela.Opis) {
-          result.push(createLabelText('Opis: ', tabela.Opis));
+          result.push(createLabelText(i18n.t('invoice.attachment.description'), tabela.Opis));
         }
         if (getTable(tabela.TNaglowek?.Kol).length) {
-          result.push(formatText('Tabela', [FormatTyp.GrayBoldTitle, FormatTyp.LabelSmallMargin]));
+          result.push(
+            formatText(i18n.t('invoice.attachment.tableLabel'), [
+              FormatTyp.GrayBoldTitle,
+              FormatTyp.LabelSmallMargin,
+            ])
+          );
           result.push(generateTable(tabela));
         }
         if (getTable(tabela.Suma?.SKom).length) {
@@ -97,8 +106,8 @@ export function generateZalaczniki(zalacznik?: Zalacznik): Content[] {
 function generateKluczWartosc(data: MetaDane[]): Content[] {
   const result: Content[] = [];
   const definedHeader: HeaderDefine[] = [
-    { name: 'ZKlucz', title: 'Klucz', format: FormatTyp.Default },
-    { name: 'ZWartosc', title: 'Wartość', format: FormatTyp.Default },
+    { name: 'ZKlucz', title: i18n.t('invoice.attachment.key'), format: FormatTyp.Default },
+    { name: 'ZWartosc', title: i18n.t('invoice.attachment.value'), format: FormatTyp.Default },
   ];
   const faWiersze: MetaDane[] = getTable(data ?? []);
   const content: FormContentState = getContentTable<(typeof faWiersze)[0]>(
@@ -135,9 +144,9 @@ function createTable(
   totalLength: number
 ): ContentTable {
   const definedHeader: Content[] = cols.map((item: Kol): string | ContentText =>
-    formatText(item.NKom?._text, FormatTyp.GrayBoldTitle)
+    formatText(makeBreakable(item.NKom?._text), FormatTyp.GrayBoldTitle)
   );
-  const tableBody: TableCell[] = [];
+  const tableBody: TableCell[][] = [];
 
   getTable(rows).forEach((item: Wiersz): void => {
     const WKom: FP[] = getTable(item.WKom);
@@ -150,38 +159,42 @@ function createTable(
     if (cuttedRows.length >= subTableIndex + 1) {
       tableBody.push(
         cuttedRows[subTableIndex].map((subItem: FP, index: number): TableCell => {
-          return formatText(
-            subItem._text ?? '',
-            cols[index]._attributes?.Typ ? TableDataType[cols[index]._attributes.Typ] : FormatTyp.Value
-          ) as TableCell;
+          let formatType = FormatTyp.Value;
+          const typeKey = cols[index]._attributes?.Typ;
+          const formatTypeAttribute = typeKey ? TableDataType[typeKey] : undefined;
+
+          if (formatTypeAttribute && ![FormatTyp.Date, FormatTyp.DateTime].includes(formatTypeAttribute)) {
+            formatType = formatTypeAttribute;
+          }
+
+          return formatText(subItem._text ? makeBreakable(subItem._text) : '', formatType) as TableCell;
         })
       );
     }
   });
-  const widths: Content[] = definedHeader.map((index: Content): string[] => {
-    if (index) {
-      return ['*'];
-    } else {
-      return ['auto'];
+
+  const widths: string[] = definedHeader.map((_, i): string => {
+    if (i === 0) {
+      return '*';
     }
+    return 'auto';
   });
 
   return {
     table: {
       headerRows: 1,
       widths: [...widths] as never[],
-      heights: 8,
       body: [[...definedHeader], ...tableBody] as TableCell[][],
     },
     layout: DEFAULT_TABLE_LAYOUT,
-    marginTop: 8,
+    margin: [0, 8, 0, 0],
   };
 }
 
 function generateSuma(data: FP[]): Content[] {
   const result: Content[] = [];
   const definedHeader: HeaderDefine[] = [
-    { name: '', title: 'Podsumowanie tabeli', format: FormatTyp.Default },
+    { name: '', title: i18n.t('invoice.attachment.tableSummary'), format: FormatTyp.Default },
   ];
   const faWiersze: FP[] = getTable(data ?? []);
   const content: FormContentState = getContentTable<(typeof faWiersze)[0]>(

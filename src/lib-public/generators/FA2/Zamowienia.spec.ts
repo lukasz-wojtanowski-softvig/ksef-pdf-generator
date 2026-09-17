@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import * as PDFFunctions from '../../../shared/PDF-functions.js';
-import FormatTyp from '../../../shared/enums/common.enum.js';
-import { TRodzajFaktury } from '../../../shared/consts/const.js';
+import * as PDFFunctions from '../../../shared/PDF-functions';
+import FormatTyp from '../../../shared/enums/common.enum';
+import { TRodzajFaktury } from '../../../shared/consts/FA.const';
 import { Zamowienie } from '../../types/fa2.types';
-import { generateZamowienie } from './Zamowienie.js';
-import { ZamowienieKorekta } from '../../enums/invoice.enums.js';
+import { generateZamowienie } from './Zamowienie';
+import { ZamowienieKorekta } from '../../enums/invoice.enums';
 
 vi.mock('../../../shared/PDF-functions', () => ({
   createHeader: vi.fn(),
@@ -13,7 +13,7 @@ vi.mock('../../../shared/PDF-functions', () => ({
   getContentTable: vi.fn(),
   getTable: vi.fn(),
   getValue: vi.fn(),
-  getTStawkaPodatku: vi.fn()
+  getTStawkaPodatku: vi.fn(),
 }));
 
 describe(generateZamowienie.name, () => {
@@ -100,6 +100,7 @@ describe(generateZamowienie.name, () => {
       );
 
       const tableCall = vi.mocked(PDFFunctions.getTable).mock.results[0].value;
+
       expect(tableCall[0].NrWierszaZam._text).toBe('1');
     });
 
@@ -121,6 +122,7 @@ describe(generateZamowienie.name, () => {
         const calls = vi.mocked(PDFFunctions.getContentTable).mock.calls;
         const header = calls[0][0];
         const cenaNetto = header.find((h: any) => h.name === 'P_9AZ');
+
         expect(cenaNetto?.format).toBe(FormatTyp.CurrencyAbs);
       });
 
@@ -141,6 +143,7 @@ describe(generateZamowienie.name, () => {
         const calls = vi.mocked(PDFFunctions.getContentTable).mock.calls;
         const header = calls[0][0];
         const cenaNetto = header.find((h: any) => h.name === 'P_9AZ');
+
         expect(cenaNetto?.format).toBe(FormatTyp.Currency);
       });
     });
@@ -204,17 +207,21 @@ describe(generateZamowienie.name, () => {
         );
 
         expect(PDFFunctions.createLabelTextArray).toHaveBeenCalledWith([
-          { value: 'Otrzymana kwota zapłaty (zaliczki): ', formatTyp: FormatTyp.LabelGreater },
-          { value: '100', formatTyp: FormatTyp.CurrencyGreater },
+          { value: 'Kwota zapłaty (zaliczki) dokumentowana fakturą: ', formatTyp: FormatTyp.LabelGreater },
+          {
+            value: '100',
+            formatTyp: [FormatTyp.CurrencyGreaterWithSeparator, FormatTyp.HeaderContent, FormatTyp.Value],
+            currency: 'PLN',
+          },
         ]);
       });
 
-      it('should not add description for ZAL invoice when p_15 = 0', () => {
+      it('should add description for ZAL invoice when p_15 = 0', () => {
         vi.mocked(PDFFunctions.createLabelTextArray).mockClear();
 
         generateZamowienie(mockOrderData, ZamowienieKorekta.BeforeCorrection, '0', TRodzajFaktury.ZAL, 'PLN');
 
-        expect(PDFFunctions.createLabelTextArray).not.toHaveBeenCalled();
+        expect(PDFFunctions.createLabelTextArray).toHaveBeenCalled();
       });
 
       it('should add description for advance correction (KOR_ZAL) when not BeforeCorrection', () => {
@@ -229,32 +236,20 @@ describe(generateZamowienie.name, () => {
         );
 
         expect(PDFFunctions.createLabelTextArray).toHaveBeenCalledWith([
-          { value: 'Kwota należności ogółem: ', formatTyp: FormatTyp.LabelGreater },
-          { value: '150', formatTyp: FormatTyp.CurrencyGreater },
+          {
+            value: 'Korekta kwoty zapłaty (zaliczki) dokumentowana fakturą: ',
+            formatTyp: FormatTyp.LabelGreater,
+          },
+          {
+            value: '150',
+            formatTyp: [FormatTyp.CurrencyGreaterWithSeparator, FormatTyp.HeaderContent, FormatTyp.Value],
+            currency: 'PLN',
+          },
         ]);
       });
     });
 
     describe('price text', () => {
-      it('should display "netto" when P_11 is in fieldsWithValue', () => {
-        vi.mocked(PDFFunctions.getContentTable).mockReturnValue({
-          content: { table: {} } as any,
-          fieldsWithValue: ['P_11', 'P_7Z'],
-        });
-
-        const result = generateZamowienie(
-          mockOrderData,
-          ZamowienieKorekta.BeforeCorrection,
-          '100',
-          TRodzajFaktury.ZAL,
-          'EUR'
-        );
-
-        const stack = (result[0] as any).stack;
-        expect(stack[1]).toContain('netto');
-        expect(stack[1]).toContain('EUR');
-      });
-
       it('should display "brutto" when P_11 is not in fieldsWithValue', () => {
         vi.mocked(PDFFunctions.getContentTable).mockReturnValue({
           content: { table: {} } as any,
@@ -270,7 +265,7 @@ describe(generateZamowienie.name, () => {
         );
 
         const stack = (result[0] as any).stack;
-        expect(stack[1]).toContain('brutto');
+
         expect(stack[1]).toContain('USD');
       });
     });

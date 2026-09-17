@@ -1,11 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { generateTransport } from './Transport.js';
-import * as PDFFunctions from '../../../shared/PDF-functions.js';
-import FormatTyp from '../../../shared/enums/common.enum.js';
+import { generateTransport } from './Transport';
+import * as PDFFunctions from '../../../shared/PDF-functions';
+import FormatTyp from '../../../shared/enums/common.enum';
 import { Transport } from '../../types/fa3.types';
-import { Kraj } from '../../../shared/consts/const.js';
-import * as PrzewoznikModule from './Przewoznik.js';
-import * as CommonFunctions from '../../../shared/generators/common/functions.js';
+import { Kraj, TypLadunku } from '../../../shared/consts/FA.const';
+import * as PrzewoznikModule from './Przewoznik';
+import * as CommonFunctions from '@shared/generators/common/functions';
+import { translateMap } from '@shared/generators/common/functions';
+import i18n from 'i18next';
 
 vi.mock('../../../shared/PDF-functions', () => ({
   createHeader: vi.fn(),
@@ -20,12 +22,6 @@ vi.mock('../../../shared/PDF-functions', () => ({
 
 vi.mock('./Przewoznik', () => ({
   generatePrzewoznik: vi.fn(),
-}));
-
-vi.mock('../../../shared/generators/common/functions', () => ({
-  getDateTimeWithoutSeconds: vi.fn(),
-  getRodzajTransportuString: vi.fn(),
-  getOpisTransportuString: vi.fn(),
 }));
 
 describe(generateTransport.name, () => {
@@ -71,8 +67,6 @@ describe(generateTransport.name, () => {
     vi.mocked(PDFFunctions.hasValue).mockReturnValue(true);
     vi.mocked(PrzewoznikModule.generatePrzewoznik).mockReturnValue('przewoznik' as any);
     vi.mocked(CommonFunctions.getDateTimeWithoutSeconds).mockReturnValue('2024-01-01 10:00');
-    vi.mocked(CommonFunctions.getRodzajTransportuString).mockReturnValue('Road');
-    vi.mocked(CommonFunctions.getOpisTransportuString).mockReturnValue('Opis');
   });
 
   it('should call createHeader with "Transport"', () => {
@@ -83,6 +77,7 @@ describe(generateTransport.name, () => {
 
   it('should call createSection and return result', () => {
     const mockSection = { section: 'test' };
+
     vi.mocked(PDFFunctions.createSection).mockReturnValue(mockSection as any);
 
     const result = generateTransport(mockTransport);
@@ -98,12 +93,9 @@ describe(generateTransport.name, () => {
         RodzajTransportu: { _text: '1' },
       } as any;
 
-      vi.mocked(CommonFunctions.getRodzajTransportuString).mockReturnValue('Road');
-
       generateTransport(data);
 
-      expect(CommonFunctions.getRodzajTransportuString).toHaveBeenCalledWith(data.RodzajTransportu);
-      expect(PDFFunctions.createLabelText).toHaveBeenCalledWith('Rodzaj transportu: ', 'Road');
+      expect(PDFFunctions.createLabelText).toHaveBeenCalledWith('Rodzaj transportu: ', 'Transport morski');
     });
 
     it('should add transport inny when TransportInny is "1"', () => {
@@ -137,6 +129,7 @@ describe(generateTransport.name, () => {
       const transportInnyCall = calls.find(
         (call) => call[0] === 'Rodzaj transportu: ' && call[1] === 'Transport inny'
       );
+
       expect(transportInnyCall).toBeUndefined();
     });
   });
@@ -157,7 +150,10 @@ describe(generateTransport.name, () => {
       generateTransport(mockTransport);
 
       expect(PDFFunctions.hasValue).toHaveBeenCalledWith(mockTransport.OpisLadunku);
-      expect(PDFFunctions.createLabelText).toHaveBeenCalledWith('Opis ładunku: ', 'Opis');
+      expect(PDFFunctions.createLabelText).toHaveBeenCalledWith(
+        'Opis ładunku: ',
+        translateMap(mockTransport.OpisLadunku, TypLadunku)
+      );
     });
 
     it('should not add opis ladunku when hasValue returns false', () => {
@@ -167,6 +163,7 @@ describe(generateTransport.name, () => {
 
       const calls = vi.mocked(PDFFunctions.createLabelText).mock.calls;
       const ladunekCall = calls.find((call) => call[0] === 'Opis ładunku: ');
+
       expect(ladunekCall).toBeUndefined();
     });
 
@@ -201,6 +198,7 @@ describe(generateTransport.name, () => {
       const ladunekInnyCall = calls.find(
         (call) => call[0] === 'Opis ładunku: ' && call[1] === 'Ładunek inny'
       );
+
       expect(ladunekInnyCall).toBeUndefined();
     });
 
@@ -274,7 +272,7 @@ describe(generateTransport.name, () => {
     it('should add WysylkaZ country code', () => {
       generateTransport(mockTransport);
 
-      expect(PDFFunctions.formatText).toHaveBeenCalledWith(Kraj['PL'], FormatTyp.Default);
+      expect(PDFFunctions.formatText).toHaveBeenCalledWith(i18n.t(Kraj['PL']), FormatTyp.Default);
     });
 
     it('should add WysylkaZ GLN', () => {
@@ -297,7 +295,7 @@ describe(generateTransport.name, () => {
     it('should add WysylkaDo country code', () => {
       generateTransport(mockTransport);
 
-      expect(PDFFunctions.formatText).toHaveBeenCalledWith(Kraj['DE'], FormatTyp.Default);
+      expect(PDFFunctions.formatText).toHaveBeenCalledWith(i18n.t(Kraj['DE']), FormatTyp.Default);
     });
 
     it('should add WysylkaDo GLN', () => {
@@ -321,6 +319,7 @@ describe(generateTransport.name, () => {
       const wysylkaDoCall = calls.find(
         (call) => call[0] === 'Adres miejsca docelowego, do którego został zlecony transport'
       );
+
       expect(wysylkaDoCall).toBeUndefined();
     });
 
@@ -335,7 +334,7 @@ describe(generateTransport.name, () => {
 
       generateTransport(data);
 
-      expect(PDFFunctions.formatText).toHaveBeenCalledWith(Kraj[''], FormatTyp.Default);
+      expect(PDFFunctions.formatText).toHaveBeenCalledWith(i18n.t(Kraj['']), FormatTyp.Default);
     });
   });
 
@@ -368,7 +367,7 @@ describe(generateTransport.name, () => {
       expect(PDFFunctions.createSubHeader).toHaveBeenCalledWith('Adres pośredni wysyłki', [0, 4, 0, 0]);
       expect(PDFFunctions.formatText).toHaveBeenCalledWith('Street 3', FormatTyp.Default);
       expect(PDFFunctions.formatText).toHaveBeenCalledWith('City 3', FormatTyp.Default);
-      expect(PDFFunctions.formatText).toHaveBeenCalledWith(Kraj['FR'], FormatTyp.Default);
+      expect(PDFFunctions.formatText).toHaveBeenCalledWith(i18n.t(Kraj['FR']), FormatTyp.Default);
       expect(PDFFunctions.createLabelText).toHaveBeenCalledWith('GLN: ', '345678');
     });
 
@@ -424,6 +423,7 @@ describe(generateTransport.name, () => {
 
       const calls = vi.mocked(PDFFunctions.createSubHeader).mock.calls;
       const wysylkaPrzezCalls = calls.filter((call) => call[0] === 'Adres pośredni wysyłki');
+
       expect(wysylkaPrzezCalls).toHaveLength(0);
     });
   });
@@ -439,6 +439,7 @@ describe(generateTransport.name, () => {
       generateTransport(mockTransport);
 
       const calls = vi.mocked(PDFFunctions.generateTwoColumns).mock.calls;
+
       expect(calls.length).toBeGreaterThanOrEqual(2);
     });
 

@@ -6,10 +6,12 @@ import {
   getValue,
   hasValue,
   makeBreakable,
-} from '../../../shared/PDF-functions.js';
-import FormatTyp from '../../../shared/enums/common.enum.js';
+} from '../../../shared/PDF-functions';
+import FormatTyp from '../../../shared/enums/common.enum';
 import { RachunekBankowy } from '../../types/fa3.types';
-import { getTypRachunkowWlasnych } from '../../../shared/generators/common/functions.js';
+import { translateMap } from '@shared/generators/common/functions';
+import { TypRachunkowWlasnych } from '@shared/consts/FA.const';
+import i18n from 'i18next';
 
 export const generujRachunekBankowy = (accounts?: RachunekBankowy[], title?: string): Content[] => {
   const result: Content[] = [];
@@ -26,19 +28,22 @@ export const generujRachunekBankowy = (accounts?: RachunekBankowy[], title?: str
     );
 
     table.push([
-      formatText('Pełny numer rachunku', FormatTyp.GrayBoldTitle),
-      formatText(getValue(account.NrRB), FormatTyp.Default),
+      formatText(i18n.t('invoice.registers.fullAccountNumber'), FormatTyp.GrayBoldTitle),
+      formatText(getValue(account.NrRB), FormatTyp.AccountNumber),
     ]);
     table.push([
-      formatText('Kod SWIFT', FormatTyp.GrayBoldTitle),
+      formatText(i18n.t('invoice.registers.swiftCode'), FormatTyp.GrayBoldTitle),
       formatText(getValue(account.SWIFT), FormatTyp.Default),
     ]);
     table.push([
-      formatText('Rachunek własny banku', FormatTyp.GrayBoldTitle),
-      formatText(makeBreakable(getTypRachunkowWlasnych(account.RachunekWlasnyBanku), 20), FormatTyp.Default),
+      formatText(i18n.t('invoice.registers.ownBankAccount'), FormatTyp.GrayBoldTitle),
+      formatText(
+        makeBreakable(translateMap(account.RachunekWlasnyBanku, TypRachunkowWlasnych), 20),
+        FormatTyp.Default
+      ),
     ]);
     table.push([
-      formatText('Nazwa banku', FormatTyp.GrayBoldTitle),
+      formatText(i18n.t('invoice.registers.bankName'), FormatTyp.GrayBoldTitle),
       formatText(
         hasValue(account.NazwaBanku)
           ? makeBreakable(getValue(account.NazwaBanku), 20)
@@ -47,7 +52,7 @@ export const generujRachunekBankowy = (accounts?: RachunekBankowy[], title?: str
       ),
     ]);
     table.push([
-      formatText('Opis rachunku', FormatTyp.GrayBoldTitle),
+      formatText(i18n.t('invoice.registers.accountDescription'), FormatTyp.GrayBoldTitle),
       formatText(
         hasValue(account.OpisRachunku)
           ? makeBreakable(getValue(account.OpisRachunku), 20)
@@ -61,7 +66,7 @@ export const generujRachunekBankowy = (accounts?: RachunekBankowy[], title?: str
         unbreakable: true,
         table: {
           body: table,
-          widths: ['*', 'auto'],
+          widths: ['auto', '*'],
         },
         layout: {
           hLineWidth: () => 1,

@@ -1,22 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { generujRachunekBankowy } from './RachunekBankowy';
 import * as PDFFunctions from '../../../shared/PDF-functions';
+import { makeBreakable } from '../../../shared/PDF-functions';
 import FormatTyp from '../../../shared/enums/common.enum';
 import { FP } from '../../types/fa2.types';
-import * as CommonFunctions from '../../../shared/generators/common/functions';
-import { makeBreakable } from '../../../shared/PDF-functions';
 
 vi.mock('../../../shared/PDF-functions', () => ({
   createHeader: vi.fn(),
   createSection: vi.fn(),
   formatText: vi.fn(),
   makeBreakable: vi.fn(),
+  formatBankAccountNumber: vi.fn(),
   getValue: vi.fn((val) => (val && val._text ? val._text : '')),
   hasValue: vi.fn((val) => Boolean(val && val._text)),
-}));
-
-vi.mock('../../../shared/generators/common/functions', () => ({
-  getTypRachunkowWlasnych: vi.fn(),
 }));
 
 describe(generujRachunekBankowy.name, () => {
@@ -36,7 +32,6 @@ describe(generujRachunekBankowy.name, () => {
     vi.mocked(PDFFunctions.createHeader).mockReturnValue(['header'] as any);
     vi.mocked(PDFFunctions.createSection).mockReturnValue('section' as any);
     vi.mocked(PDFFunctions.formatText).mockReturnValue('formatted' as any);
-    vi.mocked(CommonFunctions.getTypRachunkowWlasnych).mockReturnValue('Tak');
   });
 
   describe('when accounts is undefined or empty', () => {
@@ -81,7 +76,7 @@ describe(generujRachunekBankowy.name, () => {
       generujRachunekBankowy([mockAccount], 'Rachunek bankowy');
 
       expect(PDFFunctions.formatText).toHaveBeenCalledWith('Pełny numer rachunku', FormatTyp.GrayBoldTitle);
-      expect(PDFFunctions.formatText).toHaveBeenCalledWith(mockAccount.NrRB?._text, FormatTyp.Default);
+      expect(PDFFunctions.formatText).toHaveBeenCalledWith(mockAccount.NrRB?._text, FormatTyp.AccountNumber);
     });
 
     it('should format "Kod SWIFT" field', () => {
@@ -92,12 +87,9 @@ describe(generujRachunekBankowy.name, () => {
     });
 
     it('should format "Rachunek własny banku" field', () => {
-      vi.mocked(CommonFunctions.getTypRachunkowWlasnych).mockReturnValue('Tak');
-
       generujRachunekBankowy([mockAccount], 'Rachunek bankowy');
 
       expect(PDFFunctions.formatText).toHaveBeenCalledWith('Rachunek własny banku', FormatTyp.GrayBoldTitle);
-      expect(CommonFunctions.getTypRachunkowWlasnych).toHaveBeenCalledWith(mockAccount.RachunekWlasnyBanku);
       expect(PDFFunctions.formatText).toHaveBeenCalledWith(makeBreakable('Tak', 20), FormatTyp.Default);
     });
 
@@ -127,7 +119,7 @@ describe(generujRachunekBankowy.name, () => {
       const tableContent = sectionCall[0][1];
 
       expect(tableContent).toHaveProperty('table');
-      expect(tableContent.table).toHaveProperty('widths', ['*', 'auto']);
+      expect(tableContent.table).toHaveProperty('widths', ['auto', '*']);
     });
 
     it('should create table structure with unbreakable property', () => {
@@ -214,10 +206,6 @@ describe(generujRachunekBankowy.name, () => {
       };
 
       generujRachunekBankowy([mockAccount, account2], 'Rachunek bankowy');
-
-      expect(CommonFunctions.getTypRachunkowWlasnych).toHaveBeenCalledTimes(2);
-      expect(CommonFunctions.getTypRachunkowWlasnych).toHaveBeenCalledWith(mockAccount.RachunekWlasnyBanku);
-      expect(CommonFunctions.getTypRachunkowWlasnych).toHaveBeenCalledWith(account2.RachunekWlasnyBanku);
     });
 
     it('should format all fields for all accounts', () => {
@@ -231,8 +219,8 @@ describe(generujRachunekBankowy.name, () => {
 
       generujRachunekBankowy([mockAccount, account2], 'Rachunek bankowy');
 
-      expect(PDFFunctions.formatText).toHaveBeenCalledWith(mockAccount.NrRB?._text, FormatTyp.Default);
-      expect(PDFFunctions.formatText).toHaveBeenCalledWith(account2.NrRB?._text, FormatTyp.Default);
+      expect(PDFFunctions.formatText).toHaveBeenCalledWith(mockAccount.NrRB?._text, FormatTyp.AccountNumber);
+      expect(PDFFunctions.formatText).toHaveBeenCalledWith(account2.NrRB?._text, FormatTyp.AccountNumber);
     });
   });
 

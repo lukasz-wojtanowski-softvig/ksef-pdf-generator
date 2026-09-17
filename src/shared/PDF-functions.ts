@@ -12,25 +12,29 @@ import {
 } from 'pdfmake/interfaces';
 import {
   DEFAULT_TABLE_LAYOUT,
+  FormaPlatnosci,
   Kraj,
   TStawkaPodatku_FA1,
   TStawkaPodatku_FA2,
   TStawkaPodatku_FA3,
-} from './consts/const.js';
-import {formatDateTime, formatTime, getFormaPlatnosciString} from './generators/common/functions.js';
+} from './consts/FA.const';
+import { formatDateTimePl, formatTime, translateMap } from './generators/common/functions';
 import { HeaderDefine, PdfFP, PdfOptionField } from './types/pdf-types';
 import { FP } from '../lib-public/types/fa3.types';
 import { DifferentValues, FilteredKeysOfValues, TypesOfValues } from './types/universal.types';
 import { CreateLabelTextData } from './types/additional-data.types';
-import FormatTyp, { Answer, Position } from './enums/common.enum.js';
+import FormatTyp, { Answer, Position } from './enums/common.enum';
+import { TStawkaPodatku_FARR } from './consts/FARR.const';
+import { getDefaultFontName } from './../lib-public/configure-fonts';
 
 export function formatText(
   value: number | string | undefined | null,
   format: FormatTyp | FormatTyp[] | null = null,
   options: PdfOptionField = {},
-  currency = ''
+  currency = '',
+  allowZeroValue = false
 ): ContentText | string {
-  if (!value) {
+  if (value === null || value === undefined || (value === 0 && !allowZeroValue) || value === '') {
     return '';
   }
   const result: ContentText = { text: value.toString() };
@@ -54,12 +58,18 @@ export function formatText(
 export function generateTable<T>(array: T[], keys: Partial<Record<keyof T, string>>): Content {
   const faRows: NonNullable<T>[] = getTable(array);
 
-  const headers: { name: string; title: string; format: FormatTyp }[] = Object.entries(keys).map(
-    ([key, value]: [string, unknown]): { name: string; title: string; format: FormatTyp } => {
+  const headers: { name: string; title: string; format: FormatTyp; width?: string }[] = Object.entries(
+    keys
+  ).map(
+    (
+      [key, value]: [string, unknown],
+      index
+    ): { name: string; title: string; format: FormatTyp; width?: string } => {
       return {
         name: key,
         title: value as string,
         format: FormatTyp.Default,
+        ...(index === 0 ? { width: 'auto' } : {}),
       };
     }
   );
@@ -67,7 +77,9 @@ export function generateTable<T>(array: T[], keys: Partial<Record<keyof T, strin
   const table: { content: ContentTable | null; fieldsWithValue: string[] } = getContentTable(
     headers,
     faRows,
-    '*'
+    '*',
+    undefined,
+    15
   );
 
   return table.content ?? [];
@@ -98,6 +110,12 @@ function formatValue(
         : `${dotToComma(Number(value).toFixed(2))} ${currency}`;
       result.fontSize = 10;
       break;
+    case FormatTyp.CurrencyGreaterWithSeparator:
+      result.text = isNaN(Number(value))
+        ? (value as string)
+        : `${normalizeCurrencySeparator(value)} ${currency}`;
+      result.fontSize = 10;
+      break;
     case FormatTyp.Currency6:
       result.text = isNaN(Number(value))
         ? (value as string)
@@ -105,43 +123,48 @@ function formatValue(
       result.alignment = Position.RIGHT;
       break;
     case FormatTyp.DateTime:
-      result.text = formatDateTime(value as string);
+      result.text = formatDateTimePl(value as string, true, true);
       break;
     case FormatTyp.Date:
-      result.text = formatDateTime(value as string, false, true);
+      result.text = formatDateTimePl(value as string);
       break;
     case FormatTyp.Time:
       result.text = formatTime(value as string);
       break;
     case FormatTyp.FormOfPayment:
-      result.text = getFormaPlatnosciString({ _text: value as string });
+      result.text = translateMap({ _text: value as string }, FormaPlatnosci);
       break;
     case FormatTyp.Boolean:
-      result.text = (value as string) === '1' ? Answer.TRUE : Answer.FALSE;
+      result.text = (value as string)?.trim() === '1' ? Answer.TRUE : Answer.FALSE;
       break;
     case FormatTyp.Percentage:
-      result.text = `${value}%`;
+      result.text = value ? `${dotToComma(value.toString())}%` : ' ';
       break;
     case FormatTyp.Number:
       result.text = replaceDotWithCommaIfNeeded(value);
       result.alignment = Position.RIGHT;
       break;
+    case FormatTyp.AccountNumber:
+      result.text = formatBankAccountNumber(value as string);
+      break;
   }
 }
 
 export function normalizeCurrencySeparator(value: string | number | undefined): string {
-  if (!value) {
+  if (value === null || value === undefined || value === '') {
     return '';
   }
 
   const numberWithComma = dotToComma(typeof value === 'string' ? value : value.toString());
 
-  if (numberWithComma.includes(',')) {
+  if (numberWithComma === '0') {
+    return numberWithComma;
+  } else if (numberWithComma.includes(',')) {
     const parts = numberWithComma.split(',');
 
-    return parts[1].length > 1 ? numberWithComma : numberWithComma + '0';
+    return addThousandSeparator(parts[1].length > 1 ? numberWithComma : numberWithComma + '0');
   } else {
-    return numberWithComma + ',00';
+    return addThousandSeparator(numberWithComma + ',00');
   }
 }
 
@@ -163,9 +186,10 @@ function dotToComma(value: string): string {
   return value.replace('.', ',');
 }
 
-export function hasValue(value: FP | string | number | undefined): boolean {
+export function hasValue(value: FP | string | number | undefined | null, zeroValidator = true): boolean {
   return (
-    !!((typeof value !== 'object' && value) || (typeof value === 'object' && value._text)) || value === 0
+    !!((typeof value !== 'object' && value) || (typeof value === 'object' && value?._text)) ||
+    (zeroValidator && value === 0)
   );
 }
 
@@ -203,6 +227,22 @@ export function createLabelTextArray(data: CreateLabelTextData[]): Content[] {
       ),
     },
   ];
+}
+
+export function addThousandSeparator(
+  value: string,
+  thousandSeparator = '\xa0',
+  decimalSeparator = ','
+): string {
+  const splitRegex = /\B(?=(\d{3})+(?!\d))/g;
+
+  if (value.includes(decimalSeparator)) {
+    const splitValue = value.split(decimalSeparator);
+
+    return `${splitValue[0].replace(splitRegex, thousandSeparator)}${decimalSeparator}${splitValue[1]}`;
+  } else {
+    return value.replace(splitRegex, thousandSeparator);
+  }
 }
 
 export function createLabelText(
@@ -263,6 +303,8 @@ export function createSubHeader(text: string, margin?: Margins): Content[] {
 }
 
 export function generateStyle(): Partial<TDocumentDefinitions> {
+  const fontName = getDefaultFontName();
+
   return {
     styles: {
       columnMarginLeft: {
@@ -293,6 +335,9 @@ export function generateStyle(): Partial<TDocumentDefinitions> {
         bold: true,
         fontSize: 9,
       },
+      PEFInlineLabel: {
+        color: '#575757',
+      },
       LabelGreater: {
         color: '#343A40',
         bold: true,
@@ -301,12 +346,16 @@ export function generateStyle(): Partial<TDocumentDefinitions> {
       Value: {
         color: '#343A40',
       },
+      PEFValue: { fontSize: 8, color: '#242424' },
       ValueMedium: {
         color: '#343A40',
         fontSize: 9,
       },
       Bold: {
         fontSize: 9,
+        bold: true,
+      },
+      BoldDefault: {
         bold: true,
       },
       Description: {
@@ -320,6 +369,9 @@ export function generateStyle(): Partial<TDocumentDefinitions> {
       Right: {
         alignment: Position.RIGHT,
       },
+      Left: {
+        alignment: Position.LEFT,
+      },
       header: {
         fontSize: 12,
         bold: true,
@@ -328,10 +380,27 @@ export function generateStyle(): Partial<TDocumentDefinitions> {
       HeaderContent: {
         fontSize: 10,
         bold: true,
+        color: '#343A40',
+      },
+      PEFHeaderContent: {
+        fontSize: 12,
+        bold: true,
+        color: '#242424',
+        alignment: Position.CENTER,
+      },
+      PEFSubHeaderContent: {
+        fontSize: 9,
+        color: '#242424',
+        bold: true,
       },
       SubHeaderContent: {
         fontSize: 7,
         bold: true,
+        color: '#343A40',
+      },
+      PEFTitle: {
+        fontSize: 9,
+        color: '#242424',
       },
       TitleContent: {
         fontSize: 10,
@@ -349,9 +418,12 @@ export function generateStyle(): Partial<TDocumentDefinitions> {
       MarginTop4: {
         marginTop: 4,
       },
+      GreyTitle: {
+        color: '#707070',
+      },
     },
     defaultStyle: {
-      font: 'Roboto',
+      font: fontName ?? 'Roboto',
       fontSize: 7,
       lineHeight: 1.2,
     },
@@ -447,7 +519,7 @@ export function getContentTable<T>(
 
       return formatText(
         makeBreakable(
-          header.mappingData && value ? header.mappingData[value] : (value ?? ''),
+          header.mappingData && value ? translateMap(value, header.mappingData) : (value ?? ''),
           wordBreak ?? 40
         ),
         header.format ?? FormatTyp.Default,
@@ -463,7 +535,7 @@ export function getContentTable<T>(
         headerRows: 1,
         keepWithHeaderRows: 1,
         widths: fieldsWithValue.map((header: HeaderDefine): string => header.width ?? defaultWidths),
-        body: [headerRow, ...tableBody] as TableCell[][],
+        body: [headerRow, ...tableBody],
       },
       margin: margin ?? [0, 0, 0, 8],
       layout: DEFAULT_TABLE_LAYOUT,
@@ -471,7 +543,12 @@ export function getContentTable<T>(
   };
 }
 
-export function generateTwoColumns(kol1: Column, kol2: Column, margin?: Margins): Content {
+export function generateTwoColumns(
+  kol1: Column,
+  kol2: Column,
+  margin?: Margins,
+  unbreakable = true
+): Content {
   return {
     columns: [
       { stack: [kol1], width: '50%' },
@@ -479,6 +556,7 @@ export function generateTwoColumns(kol1: Column, kol2: Column, margin?: Margins)
     ],
     margin: margin ?? [0, 0, 0, 0],
     columnGap: 20,
+    unbreakable,
   };
 }
 
@@ -516,7 +594,7 @@ export function getKraj(code: string): string {
   return code;
 }
 
-export function getTStawkaPodatku(code: string, version: 1 | 2 | 3, P_PMarzy?: string): string {
+export function getTStawkaPodatku(code: string, version: 1 | 2 | 3 | 'RR', P_PMarzy?: string): string {
   let TStawkaPodatkuVersioned: Record<string, string> = {};
 
   switch (version) {
@@ -529,13 +607,16 @@ export function getTStawkaPodatku(code: string, version: 1 | 2 | 3, P_PMarzy?: s
     case 3:
       TStawkaPodatkuVersioned = TStawkaPodatku_FA3;
       break;
+    case 'RR':
+      TStawkaPodatkuVersioned = TStawkaPodatku_FARR;
+      break;
   }
   if (!code && P_PMarzy === '1') {
-    return 'mar�a';
+    return 'marża';
   }
 
   if (TStawkaPodatkuVersioned[code]) {
-    return TStawkaPodatkuVersioned[code];
+    return translateMap(code, TStawkaPodatkuVersioned);
   }
   return code;
 }
@@ -566,4 +647,40 @@ export function makeBreakable(
     return value.replace(new RegExp(`(.{${wordBreak}})`, 'g'), '$1\u200B');
   }
   return value;
+}
+
+function splitStringAfter(input: string, after: number): string[] {
+  return input.split('').reduce((acc: string[], char, index) => {
+    if (index % after === 0) {
+      acc.push('');
+    }
+    acc[acc.length - 1] += char;
+    return acc;
+  }, []);
+}
+
+export function formatBankAccountNumber(number: string): string {
+  if (number.length <= 12) {
+    return number;
+  }
+
+  if (/\s/.test(number.trim())) {
+    return number.trim();
+  }
+
+  const startsWithLetterOrSymbolRegex = /^[a-z!-\/:-@[-`{-~]/i;
+
+  if (number.charAt(0).match(startsWithLetterOrSymbolRegex)) {
+    number = splitStringAfter(number.replace(/ /g, ''), 4).join(' ');
+  } else {
+    const firstTwoCharacters = number.substring(0, 2);
+
+    number = `${firstTwoCharacters} ${splitStringAfter(number.substring(2).replace(/ /g, ''), 4).join(' ')}`;
+  }
+
+  return number;
+}
+
+export function getText(node?: { _text?: string } | null): string {
+  return node?._text ?? '';
 }

@@ -1,6 +1,7 @@
 export enum Position {
   LEFT = 'left',
   RIGHT = 'right',
+  CENTER = 'center',
 }
 
 export enum Answer {
@@ -14,10 +15,12 @@ export enum FormatTyp {
   Currency = 'Currency',
   CurrencyAbs = 'CurrencyAbs',
   CurrencyGreater = 'CurrencyGreater',
+  CurrencyGreaterWithSeparator = 'CurrencyGreaterWithSeparator',
   Currency6 = 'Currency6',
   Default = 'Default',
   Description = 'Description',
   GrayBoldTitle = 'GrayBoldTitle',
+  GreyTitle = 'GreyTitle',
   Label = 'Label',
   LabelMedium = 'LabelMedium',
   LabelMargin = 'LabelMargin',
@@ -40,8 +43,16 @@ export enum FormatTyp {
   Date = 'Date',
   Time = 'Time',
   FormOfPayment = 'FormOfPayment',
+  AccountNumber = 'AccountNumber',
   Percentage = 'Percentage',
   Number = 'Number',
+  PEFHeaderContent = 'PEFHeaderContent',
+  PEFSubHeaderContent = 'PEFSubHeaderContent',
+  PEFValue = 'PEFValue',
+  PEFInlineLabel = 'PEFInlineLabel',
+  PEFTitle = 'PEFTitle',
+  Left = 'Left',
+  BoldDefault = 'BoldDefault',
 }
 
 export default FormatTyp;

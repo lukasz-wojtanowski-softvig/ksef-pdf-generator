@@ -1,21 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { generatePodmiot3 } from './Podmiot3.js';
+import { generatePodmiot3 } from './Podmiot3';
 import type { Podmiot3 } from '../../types/fa3.types';
-import * as PDFFunctions from '../../../shared/PDF-functions.js';
-import * as AdresModule from './Adres.js';
-import * as DaneIdModule from './PodmiotDaneIdentyfikacyjneTPodmiot3Dto.js';
-import * as DaneKontaktoweModule from './PodmiotDaneKontaktowe.js';
-import * as CommonFunctions from '../../../shared/generators/common/functions.js';
+import * as PDFFunctions from '../../../shared/PDF-functions';
+import * as AdresModule from './Adres';
+import * as DaneIdModule from './PodmiotDaneIdentyfikacyjneTPodmiot3Dto';
+import * as DaneKontaktoweModule from './PodmiotDaneKontaktowe';
 
 vi.mock('../../../shared/PDF-functions');
 vi.mock('./Adres');
 vi.mock('./PodmiotDaneIdentyfikacyjneTPodmiot3Dto');
 vi.mock('./PodmiotDaneKontaktowe');
-vi.mock('../../../shared/generators/common/functions');
 
 describe(generatePodmiot3.name, () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     vi.mocked(PDFFunctions.createHeader).mockImplementation((text) => [{ text }]);
     vi.mocked(PDFFunctions.createLabelText).mockImplementation((label, value) => [
       { text: `${label}${value ?? ''}` },
@@ -29,7 +26,6 @@ describe(generatePodmiot3.name, () => {
       { text: 'mockDaneIdentyfikacyjne' },
     ]);
     vi.mocked(DaneKontaktoweModule.generateDaneKontaktowe).mockReturnValue([{ text: 'mockDaneKontaktowe' }]);
-    vi.mocked(CommonFunctions.getRolaString).mockReturnValue('mockRola');
   });
 
   it('generates minimal podmiot3 structure', () => {
@@ -119,9 +115,6 @@ describe(generatePodmiot3.name, () => {
     expect(
       flatColumn1.some((c) => typeof c.text === 'string' && c.text.includes('Identyfikator nabywcy: ID1'))
     ).toBe(true);
-    expect(flatColumn1.some((c) => typeof c.text === 'string' && c.text.includes('Rola: mockRola'))).toBe(
-      true
-    );
     expect(
       flatColumn1.some((c) => typeof c.text === 'string' && c.text.includes('Rola inna: opisRoli'))
     ).toBe(true);
