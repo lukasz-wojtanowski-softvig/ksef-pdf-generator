@@ -423,7 +423,8 @@
       "partialPayMechanism": "ExampleText",
       "reverseTax": "ExampleText",
       "selfInvoice": "ExampleText",
-      "threePartsSimplerMethod": "ExampleText",
+      "simplifiedWeInfoiceLabel": "ExampleText",
+      "simplifiedWeInfoice": "ExampleText",
       "transportApprovalDate": "ExampleText",
       "transportBrand": "ExampleText",
       "transportColor": "ExampleText",
@@ -512,11 +513,34 @@
       "productName": "ExampleText",
       "quantity": "ExampleText",
       "totalValue": "ExampleText",
-      "unit": "ExampleText"
+      "unit": "ExampleText",
+      "cn": "ExampleText",
+      "currencyRate": "ExampleText",
+      "exciseTaxAmount": "ExampleText",
+      "gtin": "ExampleText",
+      "gtu": "ExampleText",
+      "index": "ExampleText",
+      "netSalesValue": "ExampleText",
+      "netUnitPrice": "ExampleText",
+      "grossUnitPrice": "ExampleText",
+      "ossTaxRate": "ExampleText",
+      "pkob": "ExampleText",
+      "pkwiu": "ExampleText",
+      "procedure": "ExampleText",
+      "productMarker": "ExampleText",
+      "taxAmount": "ExampleText",
+      "taxRate": "ExampleText",
+      "uuid": "ExampleText",
+      "discount": "ExampleText",
+      "grossSalesValue": "ExampleText",
+      "getOrMakeDate": "ExampleText"
     },
     "footer": {
       "generatedIn": "ExampleText",
-      "margin": "ExampleText"
+      "margin": "ExampleText",
+      "pagesTotal": "ExampleText",
+      "version": "ExampleText",
+      "appName": "ExampleText"
     },
     "header": {
       "advance": "ExampleText",
@@ -528,6 +552,7 @@
       "correctionSettlement": "ExampleText",
       "invoiceNumberLabel": "ExampleText",
       "ksefNumberLabel": "ExampleText",
+      "acquisitionDate": "ExampleText",
       "ksefPart1": "ExampleText",
       "ksefPart2": "ExampleText",
       "ksefPart3": "ExampleText",
@@ -570,6 +595,8 @@
       "taxRate": "ExampleText",
       "totalAmountDue": "ExampleText",
       "uniqueRowNumber": "ExampleText",
+      "uuid": "ExampleText",
+      "uuidz": "ExampleText",
       "unit": "ExampleText"
     },
     "payment": {
@@ -668,12 +695,16 @@
       "qualityDesc": "ExampleText",
       "quantity": "ExampleText",
       "remainingAmount": "ExampleText",
+      "remainingAmountCorrection": "ExampleText",
       "stateBefore": "ExampleText",
       "taxRate": "ExampleText",
       "totalAmountDue": "ExampleText",
+      "totalAmountDueCorrection": "ExampleText",
       "uniqueRowNumber": "ExampleText",
       "unit": "ExampleText",
       "unitPrice": "ExampleText",
+      "uuid": "ExampleText",
+      "uuidz": "ExampleText",
       "valueZZP": "ExampleText",
       "vatSalesValue": "ExampleText",
       "wageZZP": "ExampleText"
@@ -687,7 +718,8 @@
       "toPay": "ExampleText",
       "toSettle": "ExampleText",
       "totalCharges": "ExampleText",
-      "totalDeductions": "ExampleText"
+      "totalDeductions": "ExampleText",
+      "amount": "ExampleText"
     },
     "subject1": {
       "address": "ExampleText",
@@ -890,6 +922,175 @@
     "wz": {
       "documentsHeader": "ExampleText",
       "number": "ExampleText"
+    }
+  },
+  "pef": {
+    "invoiceHeader": {
+      "documentCurrencyCode": "ExampleText",
+      "payableAmount": "ExampleText",
+      "dueDate": "ExampleText",
+      "buyerReference": "ExampleText",
+      "issueDate": "ExampleText",
+      "taxPointDate": "ExampleText",
+      "startDate": "ExampleText",
+      "endDate": "ExampleText",
+      "contractDocumentReferenceId": "ExampleText",
+      "orderReferenceId": "ExampleText",
+      "orderReferenceSalesOrderId": "ExampleText",
+      "receiptDocumentReferenceId": "ExampleText",
+      "note": "ExampleText",
+      "accountingCost": "ExampleText",
+      "invoiceDocumentReference": {
+        "issueDate": "ExampleText",
+        "id": "ExampleText"
+      }
+    },
+    "customer": {
+      "header": "ExampleText"
+    },
+    "supplier": {
+      "header": "ExampleText"
+    },
+    "issuer": {
+      "header": "ExampleText"
+    },
+    "contact": {
+      "nameAndSurname": "ExampleText",
+      "phoneNumber": "ExampleText",
+      "mail": "ExampleText",
+      "pefId": "ExampleText",
+      "title": "ExampleText"
+    },
+    "postal": {
+      "address": "ExampleText"
+    },
+    "registration": {
+      "title": "ExampleText",
+      "id": "ExampleText",
+      "Identifier": "ExampleText"
+    },
+    "taxRepresentative": {
+      "header": "ExampleText"
+    },
+    "delivery": {
+      "header": "ExampleText",
+      "deliveryLocationID": "ExampleText",
+      "actualDeliveryDate": "ExampleText"
+    },
+    "payeeparty": {
+      "header": "Payee party",
+      "companyID": "ExampleText",
+      "partyIdentificationID": "ExampleText"
+    },
+    "receiverParty": {
+      "header": "ExampleText"
+    },
+    "invoiceDescrption": {
+      "invoiceNumber": "ExampleText",
+      "dated": "ExampleText",
+      "referenceNumber": "ExampleText",
+      "projectNumber": "ExampleText",
+      "additionalDocuments": "ExampleText",
+      "buyerCostReference": "ExampleText",
+      "supportingDocumentReference": "ExampleText",
+      "link": "ExampleText",
+      "documentDescription": "ExampleText",
+      "fileType": "ExampleText",
+      "fileName": "ExampleText"
+    },
+    "stepper": {
+      "messageVersion": "ExampleText",
+      "descriptionVersion": "ExampleText",
+      "generatorVersion": "ExampleText"
+    },
+    "taxtotal": {
+      "taxAmountId": "ExampleText",
+      "taxSubtotalHeader": "ExampleText",
+      "taxCategory": "ExampleText",
+      "taxExemptionReason": "ExampleText",
+      "taxableAmount": "ExampleText",
+      "taxAmount": "ExampleText"
+    },
+    "payment": {
+      "title": "ExampleText",
+      "paymentTerms": "ExampleText",
+      "paymentTypeCode": "ExampleText",
+      "paymentIdentification": "ExampleText",
+      "paymentServiceProviderId": "ExampleText",
+      "paymentRecipientAccountNumber": "ExampleText",
+      "paymentRecipientAccountName": "ExampleText",
+      "cardNetworkId": "ExampleText",
+      "paymentCardAccountNumber": "ExampleText",
+      "paymentCardHolderName": "ExampleText",
+      "debitedAccountId": "ExampleText",
+      "directDebitId": "ExampleText"
+    },
+    "legalMonetaryTotal": {
+      "taxExclusiveAmount": "ExampleText",
+      "taxInclusiveAmount ": "ExampleText",
+      "prepaidAmount": "ExampleText",
+      "rndPrepaidAmount": "ExampleText",
+      "payableAmount": "ExampleText",
+      "settlementAmount": "ExampleText",
+      "additionalInvoiceGrossData": {
+        "Bilans": "ExampleText",
+        "Faktury": "ExampleText",
+        "Raty": "ExampleText",
+        "Odsetki": "ExampleText"
+      }
+    },
+    "allowancecharge": {
+      "allowanceHeader": "ExampleText",
+      "chargeHeader": "ExampleText",
+      "allowanceReason": "ExampleText",
+      "chargeReason": "ExampleText",
+      "allowanceReasonCode": "ExampleText",
+      "chargeReasonCode": "ExampleText",
+      "baseAmount": "ExampleText",
+      "allowanceAmount": "ExampleText",
+      "chargeAmount": "ExampleText",
+      "taxCategory": "ExampleText",
+      "totalAmount": "ExampleText"
+    },
+    "invoiceLine": {
+      "title": "ExampleText",
+      "lineNo": "ExampleText",
+      "name": "ExampleText",
+      "quantityUom": "ExampleText",
+      "netPrice": "ExampleText",
+      "taxTypeRate": "ExampleText",
+      "chargesDiscounts": "ExampleText",
+      "netAmount": "ExampleText",
+      "description": "ExampleText",
+      "standardId": "ExampleText",
+      "classificationId": "ExampleText",
+      "sellerId": "ExampleText",
+      "additionalAttributes": "ExampleText",
+      "note": "ExampleText",
+      "buyerItemId": "ExampleText",
+      "buyerCostCenterCode": "ExampleText",
+      "billingPeriod": "ExampleText",
+      "periodStartDate": "ExampleText",
+      "periodEndDate": "ExampleText",
+      "netPriceDiscount": "ExampleText",
+      "grossPrice": "ExampleText",
+      "originCountry": "ExampleText",
+      "purchaseOrderItemId": "ExampleText",
+      "invoiceItemId": "ExampleText",
+      "charges": "ExampleText",
+      "discounts": "ExampleText"
+    },
+    "taxCategory": {
+      "AE": "ExampleText",
+      "E": "ExampleText",
+      "S": "ExampleText",
+      "G": "ExampleText",
+      "O": "ExampleText",
+      "K": "ExampleText",
+      "Z": "ExampleText",
+      "L": "ExampleText",
+      "M": "ExampleText",
+      "B": "ExampleText"
     }
   }
 }

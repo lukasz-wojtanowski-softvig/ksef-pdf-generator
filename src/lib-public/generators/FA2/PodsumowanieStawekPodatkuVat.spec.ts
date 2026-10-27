@@ -1,25 +1,25 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { generatePodsumowanieStawekPodatkuVat, getSummaryTaxRate } from './PodsumowanieStawekPodatkuVat';
-import {
-  createHeader,
-  createSection,
-  formatText,
-  getNumberRounded,
-  getValue,
-  hasValue,
-} from '../../../shared/PDF-functions';
+import { createHeader, createSection, formatText, hasValue } from '../../../shared/PDF-functions';
 import FormatTyp from '../../../shared/enums/common.enum';
+import type { Fa, Faktura } from '../../types/fa2.types';
 
 vi.mock('../../../shared/PDF-functions', () => ({
   createHeader: vi.fn((text: string) => [{ text }]),
   createSection: vi.fn((content: any[], flag: boolean) => ({ content, flag })),
   formatText: vi.fn((value: any, type: FormatTyp) => ({ value, type })),
-  getNumberRounded: vi.fn((val: any) => Number(val ?? 0)),
+  toBigInt: vi.fn((val: any) => {
+    const raw = val?._text ?? val ?? 0;
+    return BigInt(Math.round(Number(raw) * 100));
+  }),
+  formatBigInt: vi.fn((val: any) => {
+    const raw = val?._text ?? val ?? 0;
+    const num = Number(raw);
+    return (num / 100).toFixed(2);
+  }),
   getValue: vi.fn((val: any) => val?._text ?? val ?? 0),
   hasValue: vi.fn((val: any) => val !== null && val !== undefined && val !== 0),
 }));
-
-import type { Faktura, Fa, FP } from '../../types/fa2.types';
 
 describe(generatePodsumowanieStawekPodatkuVat.name, () => {
   beforeEach(() => {
@@ -29,6 +29,7 @@ describe(generatePodsumowanieStawekPodatkuVat.name, () => {
   it('returns empty array if no values in Fa', () => {
     const invoice: Faktura = { Fa: {} } as any;
     const result = generatePodsumowanieStawekPodatkuVat(invoice);
+
     expect(result).toEqual([]);
   });
 
@@ -88,10 +89,9 @@ describe(generatePodsumowanieStawekPodatkuVat.name, () => {
 
   it('calls helper functions correctly', () => {
     const fa: Fa = { P_13_1: 100, P_14_1: 23, P_14_1W: 23 } as any;
+
     getSummaryTaxRate(fa);
     expect(hasValue).toHaveBeenCalled();
-    expect(getValue).toHaveBeenCalled();
-    expect(getNumberRounded).toHaveBeenCalled();
     expect(formatText).not.toHaveBeenCalled();
   });
 
@@ -104,6 +104,7 @@ describe(generatePodsumowanieStawekPodatkuVat.name, () => {
     const invoice: Faktura = { Fa: faData } as any;
     const result = generatePodsumowanieStawekPodatkuVat(invoice) as any;
     const table = result.content[1];
+
     expect(table.table.body[0][0]).toEqual({ text: 'Lp.', style: FormatTyp.GrayBoldTitle });
     expect(table.table.body[1][0]).toEqual(1);
   });
@@ -158,6 +159,7 @@ describe(generatePodsumowanieStawekPodatkuVat.name, () => {
     } as any;
 
     const summary = getSummaryTaxRate(fa);
+
     expect(summary).toHaveLength(2);
     expect(summary[0].taxRateString).toBe('odwrotne obciążenie');
     expect(summary[1].taxRateString).toBe('marża');

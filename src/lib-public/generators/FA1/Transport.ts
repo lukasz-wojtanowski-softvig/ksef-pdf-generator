@@ -26,14 +26,21 @@ export function generateTransport(transport: Transport, index?: number | null): 
   };
 
   table.push(
-    createHeader(index ? `${i18n.t('invoice.transport.header')} ${index}` : i18n.t('invoice.transport.header'))
+    createHeader(
+      index ? `${i18n.t('invoice.transport.header')} ${index}` : i18n.t('invoice.transport.header')
+    )
   );
   if (transport.RodzajTransportu?._text) {
     columns.transport.push(
-      createLabelText(i18n.t('invoice.transport.type'), translateMap(transport.RodzajTransportu, RodzajTransportu))
+      createLabelText(
+        i18n.t('invoice.transport.type'),
+        translateMap(transport.RodzajTransportu, RodzajTransportu)
+      )
     );
   } else if (transport.TransportInny?._text == '1' && transport.OpisInnegoTransportu?._text) {
-    columns.transport.push(createLabelText(i18n.t('invoice.transport.type'), i18n.t('invoice.transport.otherType')));
+    columns.transport.push(
+      createLabelText(i18n.t('invoice.transport.type'), i18n.t('invoice.transport.otherType'))
+    );
     columns.transport.push(
       createLabelText(i18n.t('invoice.transport.otherTypeDescription'), transport.OpisInnegoTransportu)
     );
@@ -46,14 +53,14 @@ export function generateTransport(transport: Transport, index?: number | null): 
         translateMap(transport.OpisLadunku, TypLadunku)
       )
     );
-    if (transport.LadunekInny?._text === '1' && transport.OpisInnegoLadunku?._text) {
-      columns.dane.push(
-        createLabelText(i18n.t('invoice.transport.cargoDescription'), i18n.t('invoice.transport.otherCargo'))
-      );
-      columns.dane.push(
-        createLabelText(i18n.t('invoice.transport.otherCargoDescription'), transport.OpisInnegoLadunku)
-      );
-    }
+  }
+  if (transport.LadunekInny?._text === '1' && transport.OpisInnegoLadunku?._text) {
+    columns.dane.push(
+      createLabelText(i18n.t('invoice.transport.cargoDescription'), i18n.t('invoice.transport.otherCargo'))
+    );
+    columns.dane.push(
+      createLabelText(i18n.t('invoice.transport.otherCargoDescription'), transport.OpisInnegoLadunku)
+    );
   }
   columns.dane.push(createLabelText(i18n.t('invoice.transport.packageUnit'), transport.JednostkaOpakowania));
   columns.dane.push(
@@ -95,7 +102,7 @@ export function generateTransport(transport: Transport, index?: number | null): 
     columns.wysylkaPrzez.push(generateAdres(adres));
   });
 
-  if (transport.WysylkaZ || transport.WysylkaDo || transport.WysylkaPrzez?.length) {
+  if (transport.WysylkaZ || transport.WysylkaDo || transport.WysylkaPrzez?.length || transport.WysylkaPrzez) {
     table.push(createHeader(i18n.t('invoice.transport.shipmentHeader')));
     table.push(generateTwoColumns(columns.wysylkaZ, columns.wysylkaDo));
     table.push(generateTwoColumns(columns.wysylkaPrzez, []));

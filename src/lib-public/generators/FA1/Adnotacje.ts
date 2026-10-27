@@ -90,7 +90,14 @@ export function generateAdnotacje(adnotacje?: Adnotacje): Content[] {
       addToColumn(firstColumn, secondColumn, { text: i18n.t('invoice.annotations.reverseTax') });
     }
     if (adnotacje.P_23?._text === '1') {
-      addToColumn(firstColumn, secondColumn, { text: i18n.t('invoice.annotations.threePartsSimplerMethod') });
+      addToColumn(
+        firstColumn,
+        secondColumn,
+        createLabelText(
+          i18n.t('invoice.annotations.simplifiedWeInfoiceLabel'),
+          i18n.t('invoice.annotations.simplifiedWeInfoice')
+        )
+      );
     }
 
     if (adnotacje.P_PMarzy?._text === '1') {
@@ -118,6 +125,7 @@ export function generateAdnotacje(adnotacje?: Adnotacje): Content[] {
 
     if (adnotacje.P_22?._text === '1') {
       let obowiazekVAT: Content[] = [];
+
       obowiazekVAT = [...createLabelText(i18n.t('invoice.annotations.newTransportsDelivery'), ' ')];
       if (obowiazekVAT) {
         firstColumn = [firstColumn, ...obowiazekVAT];

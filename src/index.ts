@@ -10,4 +10,4 @@ export { generateDokumentUPO } from './lib-public/generators/UPO4_3/Dokumenty';
 export { generateStyle } from './shared/PDF-functions';
 export * from './shared/enums/common.enum';
 export { i18next };
-export { initI18next } from './lib-public/i18n/i18n-init';
+export { i18nReady } from './lib-public/i18n/i18n-init';

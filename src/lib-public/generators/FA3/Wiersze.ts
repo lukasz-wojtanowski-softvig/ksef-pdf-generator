@@ -9,6 +9,7 @@ import {
   getTable,
   getTStawkaPodatku,
   getValue,
+  hasValue,
 } from '../../../shared/PDF-functions';
 import { HeaderDefine } from '../../../shared/types/pdf-types';
 import { TRodzajFaktury } from '../../../shared/consts/FA.const';
@@ -35,12 +36,6 @@ export function generateWiersze(faVat: Fa): Content {
     { name: 'NrWierszaFa', title: i18n.t('invoice.rows.lp'), format: FormatTyp.Default, width: 'auto' },
   ];
   const definedHeader1: HeaderDefine[] = [
-    {
-      name: 'UU_ID',
-      title: i18n.t('invoice.rows.uniqueRowNumber'),
-      format: FormatTyp.Default,
-      width: 'auto',
-    },
     { name: 'P_7', title: i18n.t('invoice.rows.productName'), format: FormatTyp.Default, width: '*' },
     { name: 'P_9A', title: i18n.t('invoice.rows.netUnitPrice'), format: FormatTyp.Currency, width: 'auto' },
     { name: 'P_9B', title: i18n.t('invoice.rows.grossUnitPrice'), format: FormatTyp.Currency, width: 'auto' },
@@ -73,6 +68,12 @@ export function generateWiersze(faVat: Fa): Content {
       format: FormatTyp.Currency,
       width: 'auto',
     },
+    {
+      name: 'UU_ID',
+      title: i18n.t('invoice.rows.uuid'),
+      format: FormatTyp.Default,
+      width: 'auto',
+    },
   ];
 
   if (getDifferentColumnsValue('KursWaluty', faWiersze).length !== 1) {
@@ -97,7 +98,7 @@ export function generateWiersze(faVat: Fa): Content {
     {
       name: 'KwotaAkcyzy',
       title: i18n.t('invoice.rows.exciseTaxAmount'),
-      format: FormatTyp.Default,
+      format: FormatTyp.Currency,
       width: 'auto',
     },
     { name: 'GTU', title: i18n.t('invoice.rows.gtu'), format: FormatTyp.Default, width: 'auto' },
@@ -118,32 +119,52 @@ export function generateWiersze(faVat: Fa): Content {
   const p_15 = getValue(faVat.P_15);
   let opis: Content = '';
 
-  if (rodzajFaktury == TRodzajFaktury.ROZ && Number(p_15) !== 0) {
+  if (rodzajFaktury == TRodzajFaktury.ROZ) {
     opis = {
       stack: createLabelTextArray([
         { value: i18n.t('invoice.rows.remainingAmount'), formatTyp: FormatTyp.LabelGreater },
         {
           value: p_15,
-          formatTyp: FormatTyp.CurrencyGreater,
+          formatTyp: FormatTyp.CurrencyGreaterWithSeparator,
           currency: getValue(faVat.KodWaluty)?.toString() ?? '',
         },
       ]),
       alignment: Position.RIGHT,
       margin: [0, 8, 0, 0],
     };
-  } else if (
-    (rodzajFaktury == TRodzajFaktury.VAT ||
-      rodzajFaktury == TRodzajFaktury.KOR ||
-      rodzajFaktury == TRodzajFaktury.KOR_ROZ ||
-      rodzajFaktury == TRodzajFaktury.UPR) &&
-    Number(p_15) !== 0
-  ) {
+  } else if (rodzajFaktury == TRodzajFaktury.KOR) {
+    opis = {
+      stack: createLabelTextArray([
+        { value: i18n.t('invoice.rows.totalAmountDueCorrection'), formatTyp: FormatTyp.LabelGreater },
+        {
+          value: p_15,
+          formatTyp: [FormatTyp.CurrencyGreaterWithSeparator, FormatTyp.HeaderContent, FormatTyp.Value],
+          currency: getValue(faVat.KodWaluty)?.toString() ?? '',
+        },
+      ]),
+      alignment: Position.RIGHT,
+      margin: [0, 8, 0, 0],
+    };
+  } else if (rodzajFaktury == TRodzajFaktury.KOR_ROZ) {
+    opis = {
+      stack: createLabelTextArray([
+        { value: i18n.t('invoice.rows.remainingAmountCorrection'), formatTyp: FormatTyp.LabelGreater },
+        {
+          value: p_15,
+          formatTyp: [FormatTyp.CurrencyGreaterWithSeparator, FormatTyp.HeaderContent, FormatTyp.Value],
+          currency: getValue(faVat.KodWaluty)?.toString() ?? '',
+        },
+      ]),
+      alignment: Position.RIGHT,
+      margin: [0, 8, 0, 0],
+    };
+  } else if (rodzajFaktury == TRodzajFaktury.VAT || rodzajFaktury == TRodzajFaktury.UPR) {
     opis = {
       stack: createLabelTextArray([
         { value: i18n.t('invoice.rows.totalAmountDue'), formatTyp: FormatTyp.LabelGreater },
         {
           value: p_15,
-          formatTyp: [FormatTyp.CurrencyGreater, FormatTyp.HeaderContent, FormatTyp.Value],
+          formatTyp: [FormatTyp.CurrencyGreaterWithSeparator, FormatTyp.HeaderContent, FormatTyp.Value],
           currency: getValue(faVat.KodWaluty)?.toString() ?? '',
         },
       ]),
@@ -164,8 +185,13 @@ export function generateWiersze(faVat: Fa): Content {
       table.push(content.content);
     }
   }
-  if (table.length < 1) {
-    return [];
+  if (table.length > 0) {
+    return createSection([...createHeader(i18n.t('invoice.rows.header')), ceny, ...table, opis], true);
   }
-  return createSection([...createHeader(i18n.t('invoice.rows.header')), ceny, ...table, opis], true);
+
+  if (hasValue(p_15)) {
+    return createSection([opis], true);
+  }
+
+  return [];
 }

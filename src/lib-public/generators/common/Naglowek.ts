@@ -1,5 +1,5 @@
 import { Content, ContentText } from 'pdfmake/interfaces';
-import { formatText, generateLine, getValue } from '../../../shared/PDF-functions';
+import { formatText, generateLine, getStrippedValue, getValue } from '../../../shared/PDF-functions';
 import { TRodzajFaktury } from '../../../shared/consts/FA.const';
 import { Fa as Fa1 } from '../../types/fa1.types';
 import { Fa as Fa2 } from '../../types/fa2.types';
@@ -51,9 +51,12 @@ export function generateNaglowek(
         { text: i18n.t('invoice.header.ksefPart3'), bold: true, fontSize: 18 },
       ],
     },
-    { ...(formatText(i18n.t('invoice.header.invoiceNumberLabel'), FormatTyp.ValueMedium) as ContentText), alignment: Position.RIGHT },
     {
-      ...(formatText(getValue(fa?.P_2), FormatTyp.HeaderPosition) as ContentText),
+      ...(formatText(i18n.t('invoice.header.invoiceNumberLabel'), FormatTyp.ValueMedium) as ContentText),
+      alignment: Position.RIGHT,
+    },
+    {
+      ...(formatText(getStrippedValue(fa?.P_2), FormatTyp.HeaderPosition) as ContentText),
       alignment: Position.RIGHT,
     },
     {
@@ -65,7 +68,20 @@ export function generateNaglowek(
           {
             text: [
               formatText(i18n.t('invoice.header.ksefNumberLabel'), FormatTyp.LabelMedium) as ContentText,
+              ' ',
               formatText(additionalData?.nrKSeF, FormatTyp.ValueMedium),
+            ],
+            alignment: Position.RIGHT,
+          } as Content,
+        ]
+      : []),
+    ...(additionalData?.acDate
+      ? [
+          {
+            text: [
+              formatText(i18n.t('invoice.header.acquisitionDate'), FormatTyp.LabelMedium),
+              ' ',
+              formatText(additionalData?.acDate, FormatTyp.ValueMedium),
             ],
             alignment: Position.RIGHT,
           } as Content,

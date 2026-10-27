@@ -70,10 +70,6 @@ export function generatePlatnosc(platnosc: Platnosc | undefined): Content {
     table.push(
       createLabelText(i18n.t('invoice.payment.paymentInformation'), i18n.t('invoice.payment.partialPayment'))
     );
-  } else {
-    table.push(
-      createLabelText(i18n.t('invoice.payment.paymentInformation'), i18n.t('invoice.payment.noPayment'))
-    );
   }
 
   if (hasValue(platnosc.FormaPlatnosci)) {
@@ -125,12 +121,13 @@ export function generatePlatnosc(platnosc: Platnosc | undefined): Content {
       generateTwoColumns(
         tableZaplataCzesciowa.content ?? [],
         tableTerminPlatnosci.content ?? [],
-        [0, 4, 0, 0]
+        [0, 4, 0, 0],
+        false
       )
     );
   } else if (terminPlatnosci.length > 0) {
     if (tableTerminPlatnosci.content) {
-      table.push(generateTwoColumns(tableTerminPlatnosci.content, []));
+      table.push(generateTwoColumns(tableTerminPlatnosci.content, [], undefined, false));
     }
   } else if (zaplataCzesciowa.length > 0 && tableZaplataCzesciowa.content) {
     table.push(tableZaplataCzesciowa.content);

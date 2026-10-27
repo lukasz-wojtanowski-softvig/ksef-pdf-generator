@@ -1,6 +1,6 @@
 {
   "name": "@akmf/ksef-fe-invoice-converter",
-  "version": "1.1.12",
+  "version": "1.1.46",
   "scripts": {
     "dev": "vite --mode public --config vite.config.ts",
     "build": "vite build --mode production",
@@ -30,7 +30,7 @@
   "devDependencies": {
     "@eslint/js": "^9.33.0",
     "@stylistic/eslint-plugin": "^5.2.3",
-    "@types/pdfmake": "^0.2.11",
+    "@types/pdfmake": "^0.3.2",
     "@typescript-eslint/eslint-plugin": "^8.40.0",
     "@typescript-eslint/parser": "^8.40.0",
     "@vitest/coverage-v8": "^3.2.4",
@@ -41,7 +41,7 @@
     "eslint-plugin-prettier": "^5.5.4",
     "globals": "^16.3.0",
     "jiti": "^2.5.1",
-    "jsdom": "^26.1.0",
+    "jsdom": "^30.0.1",
     "prettier": "^3.6.2",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.40.0",
@@ -53,7 +53,7 @@
     "i18next": "^25.8.4",
     "i18next-browser-languagedetector": "^8.2.0",
     "i18next-http-backend": "^3.0.2",
-    "pdfmake": "^0.2.20",
+    "pdfmake": "0.3.11",
     "xml-js": "^1.6.11"
   }
 }

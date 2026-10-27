@@ -62,7 +62,7 @@ describe(generateAdnotacje.name, () => {
 
     expect(JSON.stringify(result)).toContain('Metoda kasowa');
     expect(JSON.stringify(result)).toContain('Odwrotne obciążenie');
-    expect(JSON.stringify(result)).toContain('Procedura trójstronna uproszczona');
+    expect(JSON.stringify(result)).toContain('VAT: Faktura WE uproszczona na mocy art. 135-138 ustawy o pt/artykułu 141 dyrektywy 2006/112/WE. Podatek z tytułu dokonanej dostawy zostanie rozliczony przez ostatniego w kolejności podatnika podatku od wartości dodanej');
   });
 
   it('adds "Self-billing" when P_17=1', () => {
@@ -97,6 +97,7 @@ describe('generateAdnotacje - additional coverage', () => {
         [key]: { _text: '1' },
       };
       const result = generateAdnotacje(adnotacje);
+
       expect(JSON.stringify(result)).toContain(expected);
     });
   });
@@ -104,12 +105,14 @@ describe('generateAdnotacje - additional coverage', () => {
   it('handles P_22 and calls generateDostawy', () => {
     const adnotacje: any = { P_22: { _text: '1' } };
     const result = generateAdnotacje(adnotacje);
+
     expect(JSON.stringify(result)).toContain('Wewnątrzwspólnotowe dostawy nowych środków transportu');
   });
 
   it('returns empty array if adnotacje has no valid fields', () => {
     const adnotacje: any = { P_99: { _text: '' } };
     const result = generateAdnotacje(adnotacje);
+
     expect(result).toEqual([]);
   });
 
@@ -117,6 +120,7 @@ describe('generateAdnotacje - additional coverage', () => {
     const adnotacje: any = { P_16: { _text: '1' } };
     const result = generateAdnotacje(adnotacje) as any;
     const resultString = JSON.stringify(result);
+
     expect(resultString).toContain('HEADER:Adnotacje');
     expect(resultString).toContain('SPACING:1');
   });

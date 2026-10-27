@@ -10,7 +10,15 @@ vi.mock('../../../shared/PDF-functions', () => ({
     val && val._text ? (typeof val._text === 'string' ? val._text : val._text.toString()) : ''
   ),
   hasValue: vi.fn((val) => !!(val && val._text)),
-  getNumberRounded: vi.fn((val) => (typeof val === 'number' ? val : parseFloat(val?._text ?? '0') || 0)),
+  toBigInt: vi.fn((val: any) => {
+    const raw = val?._text ?? val ?? 0;
+    return BigInt(Math.round(Number(raw) * 100));
+  }),
+  formatBigInt: vi.fn((val: any) => {
+    const raw = val?._text ?? val ?? 0;
+    const num = Number(raw);
+    return (num / 100).toFixed(2);
+  }),
 }));
 
 describe('generatePodsumowanieStawekPodatkuVat', () => {
@@ -84,13 +92,13 @@ describe('getSummaryTaxRate', () => {
     expect(summary[5].taxRateString).toBe('zwolnione z opodatkowania');
   });
 
-  it('includes only tax rates with non-zero values', () => {
+  it('includes tax rates with zero values', () => {
     const fa: Fa = {
       P_13_1: { _text: '0' },
       P_14_1: { _text: '0' },
       P_14_1W: { _text: '0' },
     };
 
-    expect(getSummaryTaxRate(fa)).toHaveLength(0);
+    expect(getSummaryTaxRate(fa)).toHaveLength(1);
   });
 });

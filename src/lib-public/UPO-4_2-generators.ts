@@ -5,7 +5,7 @@ import { generateStyle } from '../shared/PDF-functions';
 import { generateNaglowekUPO } from './generators/UPO4_2/Naglowek';
 import { parseXML } from '../shared/XML-parser';
 import { Position } from '../shared/enums/common.enum';
-import { generateDokumentUPO } from './generators/UPO4_3/Dokumenty';
+import { generateDokumentUPO } from './generators/UPO4_2/Dokumenty';
 
 export async function generatePDFUPO(file: File): Promise<Blob> {
   const upo = (await parseXML(file)) as Upo;
@@ -23,13 +23,5 @@ export async function generatePDFUPO(file: File): Promise<Blob> {
     },
   };
 
-  return new Promise((resolve, reject): void => {
-    pdfMake.createPdf(docDefinition).getBlob((blob: Blob): void => {
-      if (blob) {
-        resolve(blob);
-      } else {
-        reject('Error');
-      }
-    });
-  });
+  return pdfMake.createPdf(docDefinition).getBlob();
 }

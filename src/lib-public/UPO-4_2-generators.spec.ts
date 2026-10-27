@@ -11,6 +11,7 @@ describe('generatePDFUPO', () => {
       field2: 'value2',
     },
   };
+  const mockBlob = new Blob(['pdf content'], { type: 'application/pdf' });
 
   beforeEach(() => {
     vi.spyOn(XMLParser, 'parseXML').mockResolvedValue(dummyUpo);
@@ -18,11 +19,7 @@ describe('generatePDFUPO', () => {
     vi.spyOn(pdfMake, 'createPdf').mockImplementation(
       () =>
         ({
-          getBlob: (callback: (blob: Blob | null) => void) => {
-            const blob = new Blob(['PDF content'], { type: 'application/pdf' });
-
-            callback(blob);
-          },
+          getBlob: vi.fn(() => Promise.resolve(mockBlob)),
         }) as any
     );
   });
@@ -43,17 +40,7 @@ describe('generatePDFUPO', () => {
       reader.readAsText(blob);
     });
 
-    expect(text).toContain('PDF content');
-  });
-
-  it('rejects promise if pdfMake returns null blob', async () => {
-    vi.spyOn(pdfMake, 'createPdf').mockReturnValue({
-      getBlob: (callback: (blob: Blob | null) => void) => {
-        callback(null);
-      },
-    } as any);
-
-    await expect(generatePDFUPO(dummyFile)).rejects.toEqual('Error');
+    expect(text).toContain('pdf content');
   });
 
   it('calls parseXML with the input file', async () => {

@@ -38,7 +38,7 @@ export function generateRozliczenie(
       width: '*',
     },
     {
-      title: 'Kwota',
+      title: i18n.t('invoice.settlement.amount'),
       name: 'Kwota',
       format: FormatTyp.Currency,
       width: 'auto',
@@ -54,7 +54,7 @@ export function generateRozliczenie(
     },
     {
       name: 'Kwota',
-      title: 'Kwota',
+      title: i18n.t('invoice.settlement.amount'),
       format: FormatTyp.Currency,
       width: 'auto',
     },
@@ -122,7 +122,7 @@ export function generateRozliczenie(
         { value: i18n.t('invoice.settlement.toPay'), formatTyp: FormatTyp.LabelGreater },
         {
           value: rozliczenie?.DoZaplaty,
-          formatTyp: FormatTyp.CurrencyGreater,
+          formatTyp: FormatTyp.CurrencyGreaterWithSeparator,
           currency: KodWaluty,
         },
       ]),
@@ -135,7 +135,7 @@ export function generateRozliczenie(
         { value: i18n.t('invoice.settlement.toSettle'), formatTyp: FormatTyp.LabelGreater },
         {
           value: rozliczenie?.DoRozliczenia,
-          formatTyp: FormatTyp.CurrencyGreater,
+          formatTyp: FormatTyp.CurrencyGreaterWithSeparator,
           currency: KodWaluty,
         },
       ]),

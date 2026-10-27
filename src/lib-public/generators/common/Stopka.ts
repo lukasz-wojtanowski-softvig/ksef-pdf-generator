@@ -21,6 +21,7 @@ import { FP, Naglowek, Stopka } from '../../types/fa2.types';
 import { Zalacznik } from '../../types/fa3.types';
 import { generateZalaczniki } from './Zalaczniki';
 import i18n from 'i18next';
+import { createVersionLabel } from '@shared/generators/common/functions';
 
 export function generateStopka(
   additionalData?: AdditionalDataTypes,
@@ -39,7 +40,7 @@ export function generateStopka(
   const result: Content = [
     verticalSpacing(1),
     ...(wzty.length ? [generateLine()] : []),
-    ...(wzty.length ? [generateTwoColumns(wzty, [])] : []),
+    ...(wzty.length ? [generateTwoColumns(wzty, [], undefined, false)] : []),
     ...(rejestry.length || informacje.length ? [generateLine()] : []),
     ...rejestry,
     ...informacje,
@@ -49,7 +50,10 @@ export function generateStopka(
     createSection(
       [
         {
-          stack: createLabelText(i18n.t('invoice.footer.generatedIn'), naglowek?.SystemInfo),
+          stack: createLabelText(
+            i18n.t('invoice.footer.generatedIn'),
+            createVersionLabel(naglowek?.SystemInfo?._text)
+          ),
           margin: [0, 8, 0, 0],
         },
       ],
@@ -58,7 +62,7 @@ export function generateStopka(
     ),
   ];
 
-  return createSection(result, false);
+  return createSection(result, false, [0, 0, 0, 0]);
 }
 
 function generateWZ(wz?: FP[]): Content[] {
@@ -187,16 +191,16 @@ function generateQR2CodeData(additionalData?: AdditionalDataTypes): Content[] {
       result.push({
         columns: [
           {
-            stack: [qrCode, { text: i18n.t('invoice.qr2.certificate'), alignment: 'center', margin: [0, 8, 0, 0] }],
+            stack: [
+              qrCode,
+              { text: i18n.t('invoice.qr2.certificate'), alignment: 'center', margin: [0, 8, 0, 0] },
+            ],
             alignment: 'center',
             width: 'auto',
           },
           {
             stack: [
-              formatText(
-                  i18n.t('invoice.qr2.description'),
-                FormatTyp.Label
-              ),
+              formatText(i18n.t('invoice.qr2.description'), FormatTyp.Label),
               {
                 text: formatText(breakLongText(additionalData.qr2Code), FormatTyp.Link),
                 link: additionalData.qr2Code,

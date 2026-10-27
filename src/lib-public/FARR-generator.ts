@@ -1,8 +1,8 @@
 import pdfMake, { TCreatedPdf } from 'pdfmake/build/pdfmake';
 import pdfFonts from 'pdfmake/build/vfs_fonts';
 import { TDocumentDefinitions } from 'pdfmake/interfaces';
-import { Position } from '../shared/enums/common.enum';
-import { generateStyle } from '../shared/PDF-functions';
+import { Position } from '@shared/enums/common.enum';
+import { generateStyle } from '@shared/PDF-functions';
 import { generateDaneFaKorygowanej } from './generators/common/DaneFaKorygowanej';
 import { generateRozliczenie } from './generators/common/Rozliczenie';
 import { generateStopka } from './generators/common/Stopka';
@@ -15,8 +15,9 @@ import { generateWiersze } from './generators/FA_RR/Wiersze';
 import { AdditionalDataTypes } from './types/common.types';
 import { FaRR } from './types/FaRR.types';
 import { generateWatermark } from '@shared/consts/watermark';
+import i18n from 'i18next';
 
-pdfMake.vfs = pdfFonts.vfs;
+pdfMake.addVirtualFileSystem(pdfFonts);
 
 export function generateFARR(invoice: FaRR, additionalData: AdditionalDataTypes): TCreatedPdf {
   const docDefinition: TDocumentDefinitions = {
@@ -34,7 +35,7 @@ export function generateFARR(invoice: FaRR, additionalData: AdditionalDataTypes)
     ],
     footer: (currentPage, pageCount) => {
       return {
-        text: currentPage.toString() + ' z ' + pageCount,
+        text: `${currentPage.toString()} ${i18n.t('invoice.footer.pagesTotal')} ${pageCount}`,
         alignment: Position.RIGHT,
         margin: [0, 0, 40, 0],
       };

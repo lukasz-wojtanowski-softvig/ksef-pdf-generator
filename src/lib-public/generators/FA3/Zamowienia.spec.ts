@@ -208,16 +208,20 @@ describe(generateZamowienie.name, () => {
 
         expect(PDFFunctions.createLabelTextArray).toHaveBeenCalledWith([
           { value: 'Kwota zapłaty (zaliczki) dokumentowana fakturą: ', formatTyp: FormatTyp.LabelGreater },
-          { value: '100', formatTyp: FormatTyp.CurrencyGreater },
+          {
+            value: '100',
+            formatTyp: [FormatTyp.CurrencyGreaterWithSeparator, FormatTyp.HeaderContent, FormatTyp.Value],
+            currency: 'PLN',
+          },
         ]);
       });
 
-      it('should not add description for ZAL invoice when p_15 = 0', () => {
+      it('should add description for ZAL invoice when p_15 = 0', () => {
         vi.mocked(PDFFunctions.createLabelTextArray).mockClear();
 
         generateZamowienie(mockOrderData, ZamowienieKorekta.BeforeCorrection, '0', TRodzajFaktury.ZAL, 'PLN');
 
-        expect(PDFFunctions.createLabelTextArray).not.toHaveBeenCalled();
+        expect(PDFFunctions.createLabelTextArray).toHaveBeenCalled();
       });
 
       it('should add description for advance correction (KOR_ZAL) when not BeforeCorrection', () => {
@@ -236,7 +240,11 @@ describe(generateZamowienie.name, () => {
             value: 'Korekta kwoty zapłaty (zaliczki) dokumentowana fakturą: ',
             formatTyp: FormatTyp.LabelGreater,
           },
-          { value: '150', formatTyp: FormatTyp.CurrencyGreater },
+          {
+            value: '150',
+            formatTyp: [FormatTyp.CurrencyGreaterWithSeparator, FormatTyp.HeaderContent, FormatTyp.Value],
+            currency: 'PLN',
+          },
         ]);
       });
     });

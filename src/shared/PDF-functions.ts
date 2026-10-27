@@ -7,7 +7,6 @@ import {
   CustomTableLayout,
   Margins,
   Style,
-  TableCell,
   TDocumentDefinitions,
 } from 'pdfmake/interfaces';
 import {
@@ -25,14 +24,16 @@ import { DifferentValues, FilteredKeysOfValues, TypesOfValues } from './types/un
 import { CreateLabelTextData } from './types/additional-data.types';
 import FormatTyp, { Answer, Position } from './enums/common.enum';
 import { TStawkaPodatku_FARR } from './consts/FARR.const';
+import { getDefaultFontName } from './../lib-public/configure-fonts';
 
 export function formatText(
   value: number | string | undefined | null,
   format: FormatTyp | FormatTyp[] | null = null,
   options: PdfOptionField = {},
-  currency = ''
+  currency = '',
+  allowZeroValue = false
 ): ContentText | string {
-  if (!value) {
+  if (value === null || value === undefined || (value === 0 && !allowZeroValue) || value === '') {
     return '';
   }
   const result: ContentText = { text: value.toString() };
@@ -108,6 +109,12 @@ function formatValue(
         : `${dotToComma(Number(value).toFixed(2))} ${currency}`;
       result.fontSize = 10;
       break;
+    case FormatTyp.CurrencyGreaterWithSeparator:
+      result.text = isNaN(Number(value))
+        ? (value as string)
+        : `${normalizeCurrencySeparator(value)} ${currency}`;
+      result.fontSize = 10;
+      break;
     case FormatTyp.Currency6:
       result.text = isNaN(Number(value))
         ? (value as string)
@@ -130,7 +137,7 @@ function formatValue(
       result.text = (value as string)?.trim() === '1' ? Answer.TRUE : Answer.FALSE;
       break;
     case FormatTyp.Percentage:
-      result.text = `${value}%`;
+      result.text = value ? `${dotToComma(value.toString())}%` : ' ';
       break;
     case FormatTyp.Number:
       result.text = replaceDotWithCommaIfNeeded(value);
@@ -143,13 +150,15 @@ function formatValue(
 }
 
 export function normalizeCurrencySeparator(value: string | number | undefined): string {
-  if (!value) {
+  if (value === null || value === undefined || value === '') {
     return '';
   }
 
   const numberWithComma = dotToComma(typeof value === 'string' ? value : value.toString());
 
-  if (numberWithComma.includes(',')) {
+  if (numberWithComma === '0') {
+    return numberWithComma;
+  } else if (numberWithComma.includes(',')) {
     const parts = numberWithComma.split(',');
 
     return addThousandSeparator(parts[1].length > 1 ? numberWithComma : numberWithComma + '0');
@@ -176,9 +185,10 @@ function dotToComma(value: string): string {
   return value.replace('.', ',');
 }
 
-export function hasValue(value: FP | string | number | undefined): boolean {
+export function hasValue(value: FP | string | number | undefined | null, zeroValidator = true): boolean {
   return (
-    !!((typeof value !== 'object' && value) || (typeof value === 'object' && value._text)) || value === 0
+    !!((typeof value !== 'object' && value) || (typeof value === 'object' && value?._text)) ||
+    (zeroValidator && value === 0)
   );
 }
 
@@ -187,6 +197,14 @@ export function getValue(value: FP | string | number | undefined): string | numb
     return value._text;
   }
   return value;
+}
+
+export function getStrippedValue(value: FP | string | undefined): string | undefined {
+  if (typeof value === 'object') {
+    return value?._text?.replace(/\s+/g, ' ').trim();
+  }
+
+  return value?.replace(/\s+/g, ' ').trim();
 }
 
 export function getNumber(value: FP | string | number | undefined): number {
@@ -202,10 +220,44 @@ export function getNumber(value: FP | string | number | undefined): number {
   return parseFloat(text.toString());
 }
 
-export function getNumberRounded(value: FP | string | number | undefined): number {
-  const number: number = getNumber(value);
+export function getNumberToString(value: FP | string | number | undefined): string {
+  const text: string | number | undefined = getValue(value);
 
-  return Math.round(number * 100) / 100;
+  if (!text) {
+    return '0';
+  }
+  return text.toString();
+}
+
+export function toBigInt(value: FP | string | number | undefined): bigint {
+  const text: string | number | undefined = getValue(value);
+
+  if (!text) {
+    return BigInt(0);
+  }
+
+  const normalized = text.toString().replace(',', '.');
+  const negative = normalized.charAt(0) === '-';
+  const unsigned = negative ? normalized.substring(1) : normalized;
+
+  const parts = unsigned.split('.');
+  const integer = parts[0];
+  const decimal = parts.length > 1 ? parts[1] : '';
+
+  const decimals = (decimal + '00').substring(0, 2);
+
+  const result = BigInt(integer) * BigInt(100) + BigInt(decimals);
+
+  return negative ? -result : result;
+}
+
+export function formatBigInt(value: bigint): string {
+  const negative = value < BigInt(0);
+  const abs = negative ? -value : value;
+  const intPart = abs / BigInt(100);
+  const decPart = (abs % BigInt(100)).toString().padStart(2, '0');
+
+  return `${negative ? '-' : ''}${intPart}.${decPart}`;
 }
 
 export function createLabelTextArray(data: CreateLabelTextData[]): Content[] {
@@ -220,12 +272,14 @@ export function createLabelTextArray(data: CreateLabelTextData[]): Content[] {
 
 export function addThousandSeparator(
   value: string,
-  thousandSeparator: string = ' ',
-  decimalSeparator: string = ','
+  thousandSeparator = '\xa0',
+  decimalSeparator = ','
 ): string {
   const splitRegex = /\B(?=(\d{3})+(?!\d))/g;
+
   if (value.includes(decimalSeparator)) {
     const splitValue = value.split(decimalSeparator);
+
     return `${splitValue[0].replace(splitRegex, thousandSeparator)}${decimalSeparator}${splitValue[1]}`;
   } else {
     return value.replace(splitRegex, thousandSeparator);
@@ -290,6 +344,8 @@ export function createSubHeader(text: string, margin?: Margins): Content[] {
 }
 
 export function generateStyle(): Partial<TDocumentDefinitions> {
+  const fontName = getDefaultFontName();
+
   return {
     styles: {
       columnMarginLeft: {
@@ -320,6 +376,9 @@ export function generateStyle(): Partial<TDocumentDefinitions> {
         bold: true,
         fontSize: 9,
       },
+      PEFInlineLabel: {
+        color: '#575757',
+      },
       LabelGreater: {
         color: '#343A40',
         bold: true,
@@ -328,12 +387,16 @@ export function generateStyle(): Partial<TDocumentDefinitions> {
       Value: {
         color: '#343A40',
       },
+      PEFValue: { fontSize: 8, color: '#242424' },
       ValueMedium: {
         color: '#343A40',
         fontSize: 9,
       },
       Bold: {
         fontSize: 9,
+        bold: true,
+      },
+      BoldDefault: {
         bold: true,
       },
       Description: {
@@ -347,6 +410,9 @@ export function generateStyle(): Partial<TDocumentDefinitions> {
       Right: {
         alignment: Position.RIGHT,
       },
+      Left: {
+        alignment: Position.LEFT,
+      },
       header: {
         fontSize: 12,
         bold: true,
@@ -357,10 +423,25 @@ export function generateStyle(): Partial<TDocumentDefinitions> {
         bold: true,
         color: '#343A40',
       },
+      PEFHeaderContent: {
+        fontSize: 12,
+        bold: true,
+        color: '#242424',
+        alignment: Position.CENTER,
+      },
+      PEFSubHeaderContent: {
+        fontSize: 9,
+        color: '#242424',
+        bold: true,
+      },
       SubHeaderContent: {
         fontSize: 7,
         bold: true,
         color: '#343A40',
+      },
+      PEFTitle: {
+        fontSize: 9,
+        color: '#242424',
       },
       TitleContent: {
         fontSize: 10,
@@ -378,9 +459,12 @@ export function generateStyle(): Partial<TDocumentDefinitions> {
       MarginTop4: {
         marginTop: 4,
       },
+      GreyTitle: {
+        color: '#707070',
+      },
     },
     defaultStyle: {
-      font: 'Roboto',
+      font: fontName ?? 'Roboto',
       fontSize: 7,
       lineHeight: 1.2,
     },
@@ -492,7 +576,7 @@ export function getContentTable<T>(
         headerRows: 1,
         keepWithHeaderRows: 1,
         widths: fieldsWithValue.map((header: HeaderDefine): string => header.width ?? defaultWidths),
-        body: [headerRow, ...tableBody] as TableCell[][],
+        body: [headerRow, ...tableBody],
       },
       margin: margin ?? [0, 0, 0, 8],
       layout: DEFAULT_TABLE_LAYOUT,
@@ -617,13 +701,27 @@ function splitStringAfter(input: string, after: number): string[] {
 }
 
 export function formatBankAccountNumber(number: string): string {
-  if (number.length <= 12) return number;
+  if (number.length <= 12) {
+    return number;
+  }
+
+  if (/\s/.test(number.trim())) {
+    return number.trim();
+  }
+
   const startsWithLetterOrSymbolRegex = /^[a-z!-\/:-@[-`{-~]/i;
+
   if (number.charAt(0).match(startsWithLetterOrSymbolRegex)) {
     number = splitStringAfter(number.replace(/ /g, ''), 4).join(' ');
   } else {
     const firstTwoCharacters = number.substring(0, 2);
+
     number = `${firstTwoCharacters} ${splitStringAfter(number.substring(2).replace(/ /g, ''), 4).join(' ')}`;
   }
+
   return number;
+}
+
+export function getText(node?: { _text?: string } | null): string {
+  return node?._text ?? '';
 }
