@@ -26,6 +26,7 @@ try {
     target: 'node22',
     format: 'cjs',  // CommonJS wymagane dla SEA
     outfile: 'dist/sea-bundle.cjs',
+    define: { __APP_VERSION__: JSON.stringify(JSON.parse(readFileSync('package.json', 'utf-8')).version) },
     external: [],  // Bundle wszystko (brak external)
     minify: false,  // Bez minifikacji dla debugowania
     sourcemap: false,

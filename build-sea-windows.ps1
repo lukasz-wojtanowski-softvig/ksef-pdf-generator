@@ -31,18 +31,29 @@ Write-Host ""
 
 # Krok 4: Usunięcie sygnatury (opcjonalnie na Windows)
 Write-Host "🔓 Etap 4: Usuwanie sygnatury..." -ForegroundColor Yellow
-# Usuń podpis cyfrowy, aby uniknąć ostrzeżenia "signature corrupted"
-# Wymaga signtool.exe z Windows SDK
+# Usuń podpis cyfrowy (tablica certyfikatów PE), aby uniknąć ostrzeżenia "signature corrupted"
+# Bez zależności od signtool - nagłówek PE modyfikowany bezpośrednio
 try {
-    $signtool = ".\signtool.exe"
-    & $signtool remove /s ksef-pdf.exe 2>$null
-    if ($LASTEXITCODE -eq 0) {
+    $path = (Resolve-Path ksef-pdf.exe).Path
+    $bytes = [System.IO.File]::ReadAllBytes($path)
+    $pe = [BitConverter]::ToInt32($bytes, 0x3C)
+    $opt = $pe + 24
+    $magic = [BitConverter]::ToUInt16($bytes, $opt)
+    $dirOffset = if ($magic -eq 0x20B) { $opt + 144 } else { $opt + 128 }
+    $certPos = [BitConverter]::ToUInt32($bytes, $dirOffset)
+    $certSize = [BitConverter]::ToUInt32($bytes, $dirOffset + 4)
+    if ($certPos -gt 0 -and ($certPos + $certSize) -eq $bytes.Length) {
+        for ($i = 0; $i -lt 8; $i++) { $bytes[$dirOffset + $i] = 0 }
+        for ($i = 0; $i -lt 4; $i++) { $bytes[$opt + 64 + $i] = 0 }  # CheckSum
+        $trimmed = New-Object byte[] $certPos
+        [Array]::Copy($bytes, $trimmed, $certPos)
+        [System.IO.File]::WriteAllBytes($path, $trimmed)
         Write-Host "✅ Podpis usunięty" -ForegroundColor Green
     } else {
-        Write-Host "ℹ️  Nie można usunąć podpisu (wymaga Windows SDK) - kontynuuję" -ForegroundColor Gray
+        Write-Host "ℹ️  Brak podpisu do usunięcia" -ForegroundColor Gray
     }
 } catch {
-    Write-Host "ℹ️  signtool niedostępny - postject wyświetli ostrzeżenie (nie wpływa na działanie)" -ForegroundColor Gray
+    Write-Host "ℹ️  Nie udało się usunąć podpisu: $_ - kontynuuję" -ForegroundColor Gray
 }
 Write-Host ""
 
