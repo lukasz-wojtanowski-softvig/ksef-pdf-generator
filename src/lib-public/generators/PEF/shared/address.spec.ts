@@ -3,8 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createAddress } from './address';
 
 import { createInlineLabelValue, createPEFSectionTitle } from '@shared/functions-pef';
-import { ListAgencyNameEnum, PartyPostalAddress } from 'src/lib-public/types/pef-invoice.types';
-import { getTable } from '@shared/PDF-functions';
+import { ListAgencyNameEnum, PartyPostalAddress } from '../../../types/pef-invoice.types';
 
 vi.mock('../../../../shared/PDF-functions', () => ({
   formatText: vi.fn((text: string, style: string) => ({ text, style })),

@@ -58,6 +58,7 @@ export function generateInvoiceHeader(
       {
         text: [
           formatText(i18n.t('invoice.header.ksefNumberLabel'), FormatTyp.PEFInlineLabel),
+          ' ',
           formatText(numberKSeF, FormatTyp.PEFValue),
         ],
         alignment: Position.RIGHT,
@@ -96,9 +97,14 @@ export function generateInvoiceHeader(
   const payableAmountValue = getPayableAmountValue(invoice);
   const payableAmountLabel = getPayableAmountLabel(payableAmountValue);
 
-  const payableAmount = `${replaceDotWithCommaIfNeeded(getText(payableAmountValue))} ${payableAmountValue?._attributes?.currencyID}`;
+  if (payableAmountValue) {
+    const payableAmount = `${replaceDotWithCommaIfNeeded(getText(payableAmountValue))} ${payableAmountValue?._attributes?.currencyID}`;
 
-  additionalDataRow1.push(createLabelWithBoldText(i18n.t(payableAmountLabel), payableAmount));
+    additionalDataRow1.push(createLabelWithBoldText(i18n.t(payableAmountLabel), payableAmount));
+  } else {
+    additionalDataRow1.push(createLabelWithBoldText(i18n.t(payableAmountLabel), '-'));
+  }
+
   //END
 
   if (isPEFBasic(invoice)) {
@@ -266,7 +272,7 @@ function generateFourColumns(contents: Content[], style: Style | undefined = und
 
 function getPayableAmountValue(
   invoice: PEFCorrectiveInvoice | PEFBasicInvoice | PEFSpecInvoice
-): Amount | Amount | undefined {
+): Amount | undefined {
   if (isPEFCorrective(invoice)) {
     const UBLExtensionArray = getUBLExtensionArray(invoice);
     const UBLExtensionDiffValues = getExtensionTwo(UBLExtensionArray);
@@ -277,10 +283,8 @@ function getPayableAmountValue(
   }
 }
 
-function getPayableAmountLabel(payableAmount: Amount | Amount | undefined): string {
-  if (!payableAmount) {
-    return '';
-  } else if (Number(payableAmount._text) >= 0) {
+function getPayableAmountLabel(payableAmount: Amount | undefined): string {
+  if (!payableAmount || Number(payableAmount._text) >= 0) {
     return 'pef.legalMonetaryTotal.payableAmount';
   } else {
     return 'pef.legalMonetaryTotal.settlementAmount';

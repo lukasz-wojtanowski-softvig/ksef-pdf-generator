@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { generateAccountReckoning } from './AccountReckoning';
-import { PEFCorrectiveInvoice } from 'src/lib-public/types/pef-invoice-corrective.types';
+import { PEFCorrectiveInvoice } from '../../types/pef-invoice-corrective.types';
 
 let mockInvoice: Partial<PEFCorrectiveInvoice> = {
   UBLExtensions: {

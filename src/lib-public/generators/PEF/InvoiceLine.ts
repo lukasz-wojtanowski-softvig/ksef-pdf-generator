@@ -1,4 +1,4 @@
-import { createPefTableHeader, getContentPEFTable } from '@shared/functions-pef';
+import { createPefTableHeader, getContentPEFTable, getNameByCode } from '@shared/functions-pef';
 import { HeaderDefine } from '@shared/types/pdf-types';
 import { Content, ContentText } from 'pdfmake/interfaces';
 import { FormatTyp, Position } from '@shared/enums/common.enum';
@@ -8,7 +8,7 @@ import {
   CreditNoteLine,
   InvoiceLine,
   PEFCorrectiveInvoice,
-} from 'src/lib-public/types/pef-invoice-corrective.types';
+} from '../../types/pef-invoice-corrective.types';
 import i18n from 'i18next';
 import { SectionType } from '@shared/enums/pef-invoice.enum';
 import {
@@ -28,7 +28,7 @@ import {
   normalizeCurrencySeparator,
 } from '@shared/PDF-functions';
 import { isPEFBasic, isPEFCorrective } from '../../types/typeguards';
-import { PEFBasicInvoice, PEFInvoiceInvoiceLine } from '../../types/pef-invoice.types';
+import { CustomizationID, FP, PEFBasicInvoice, PEFInvoiceInvoiceLine } from '../../types/pef-invoice.types';
 import { PEFSpecInvoice } from '../../types/pef-invoice-spec.types';
 
 export function generateInvoiceLine(
@@ -44,6 +44,7 @@ export function generateInvoiceLine(
   if (sectionType === SectionType.BeforeCorrection && isPEFCorrective(invoice)) {
     const UBLExtensionArray = getUBLExtensionArray(invoice);
     const UBLExtensionCorrectiveData = getExtensionOne(UBLExtensionArray);
+
     data = getTable(UBLExtensionCorrectiveData?.OriginalInvoiceData?.InvoiceLine);
     sum = UBLExtensionCorrectiveData?.OriginalInvoiceData?.LegalMonetaryTotal?.LineExtensionAmount;
   }
@@ -365,16 +366,21 @@ function generateDocumentReference(
 ): PEFTableCell[] {
   let OrderLineReference: PEFTableCell = { value: [], style: 'inline' };
   let DocumentReference: PEFTableCell = { value: [], style: 'inline' };
+  let orderLineRef: CustomizationID | FP | undefined;
 
-  if (hasValue(getTable(row?.OrderLineReference)?.[0]?.LineID)) {
+  if (Array.isArray(row?.OrderLineReference)) {
+    orderLineRef = getTable(row?.OrderLineReference)?.[0]?.LineID;
+  } else {
+    orderLineRef = row?.OrderLineReference?.LineID;
+  }
+
+  if (hasValue(orderLineRef)) {
     OrderLineReference = {
-      value: [
-        { text: getText(getTable(row?.OrderLineReference)?.[0]?.LineID) },
-        { text: i18n.t('pef.invoiceLine.purchaseOrderItemId') },
-      ],
+      value: [{ text: getText(orderLineRef) }, { text: i18n.t('pef.invoiceLine.purchaseOrderItemId') }],
       style: 'labelValueInline',
     };
   }
+
   if (hasValue(getTable(row?.DocumentReference)?.[0]?.ID)) {
     DocumentReference = {
       value: [
@@ -394,7 +400,10 @@ function prepareQuantity(row: InvoiceLine | CreditNoteLine | PEFInvoiceInvoiceLi
 
   return [
     {
-      value: [{ text: getText(quantity) }, { text: quantity?._attributes?.unitCode as string }],
+      value: [
+        { text: getText(quantity) },
+        { text: getNameByCode(quantity?._attributes?.unitCode as string) ?? '-' },
+      ],
       style: 'valueLabel',
     },
   ];
@@ -442,7 +451,7 @@ function prepareChargesAndDiscounts(
   });
 }
 
-function getMultiplierFactorNumeric(allowanceCharge: AllowanceCharge) {
+function getMultiplierFactorNumeric(allowanceCharge: AllowanceCharge): string {
   const { MultiplierFactorNumeric, BaseAmount } = allowanceCharge;
 
   const percentText = MultiplierFactorNumeric
@@ -597,12 +606,12 @@ const columnDefs: ColumnDef<InvoiceLine | PEFInvoiceInvoiceLine | CreditNoteLine
   {
     key: 'chargesDiscounts',
     isVisible: (invoice) => !(isPEFBasic(invoice) && !invoice.AllowanceCharge?.length),
-    render: (row, ctx) => prepareChargesAndDiscounts(row),
+    render: (row) => prepareChargesAndDiscounts(row),
   },
   {
     key: 'netAmount',
     isVisible: () => true,
-    render: (row, ctx) => [
+    render: (row) => [
       {
         value: [
           { text: getText(row?.LineExtensionAmount), format: FormatTyp.Currency },

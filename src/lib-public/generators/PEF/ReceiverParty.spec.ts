@@ -1,8 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { Party, ReceiverParty } from 'src/lib-public/types/pef.types';
 import { createPefHeader, createPEFSubHeader } from '@shared/functions-pef';
 import { createContact } from './shared/contact';
 import { generateReceiverParty } from './ReceiverParty';
+import { ListAgencyNameEnum, Party } from '../../types/pef-invoice.types';
+import { ReceiverParty } from '../../types/pef-invoice-corrective.types';
 
 vi.mock('../../../shared/functions-pef', () => ({
   createPEFSectionTitle: vi.fn((text: string) => ({ text })),
@@ -19,13 +20,15 @@ vi.mock('./shared/contact', () => ({
 
 let party: Partial<Party> = {
   Contact: {
-    ElectronicMail: 'fake@email.com',
-    Name: 'Fake',
-    Telephone: '999999999',
+    ElectronicMail: { _text: 'fake@email.com' as ListAgencyNameEnum },
+    Name: { _text: 'Fake' as ListAgencyNameEnum },
+    Telephone: { _text: '999999999' as ListAgencyNameEnum },
   },
-  PartyName: {
-    Name: 'Fake name',
-  },
+  PartyName: [
+    {
+      Name: { _text: 'Fake name' as ListAgencyNameEnum },
+    },
+  ],
 };
 
 describe(generateReceiverParty.name, () => {

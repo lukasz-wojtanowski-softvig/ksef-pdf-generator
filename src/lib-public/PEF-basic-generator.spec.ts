@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, MockInstance, vi } from 'vitest';
 import { generateBasicPEF } from './PEF-basic-generator';
 import pdfMake, { TCreatedPdf } from 'pdfmake/build/pdfmake';
 import { AdditionalDataTypes } from './types/common.types';
-import { LegalMonetaryTotal, PEFBasicInvoice } from './types/pef-invoice.types';
+import { LegalMonetaryTotal, ListAgencyNameEnum, Party, PEFBasicInvoice } from './types/pef-invoice.types';
 
 vi.mock('./generators/PEF/AccountingParty', () => ({
   generateAccountingParty: vi.fn(() => ({ example: 'AccountingCustomerParty' })),
@@ -42,35 +42,41 @@ vi.mock('./PDF-functions', () => ({
   generateStyle: vi.fn(() => ({ styles: {}, defaultStyle: {} })),
 }));
 
-const Party = {
+const Party: Partial<Party> = {
   Contact: {
-    ElectronicMail: 'fake@email.com',
-    Name: 'Fake',
-    Telephone: '999999999',
+    ElectronicMail: { _text: 'fake@email.com' as ListAgencyNameEnum },
+    Name: { _text: 'Fake' as ListAgencyNameEnum },
+    Telephone: { _text: '999999999' as ListAgencyNameEnum },
   },
-  EndpointID: '77777777',
-  PartyLegalEntity: {
-    CompanyID: '77777777',
-    CompanyLegalForm: 'form',
-    RegistrationName: 'Fake registration',
-  },
-  PartyName: {
-    Name: 'Fake name',
-  },
-  PartyTaxScheme: {
-    CompanyID: '77777777',
-    TaxScheme: {
-      ID: 'Fake ID',
+  EndpointID: { _text: '77777777' },
+  PartyLegalEntity: [
+    {
+      CompanyID: { _text: '77777777' },
+      CompanyLegalForm: { _text: 'form' as ListAgencyNameEnum },
+      RegistrationName: { _text: 'Fake registration' as ListAgencyNameEnum },
     },
-  },
+  ],
+  PartyName: [
+    {
+      Name: { _text: 'Fake name' as ListAgencyNameEnum },
+    },
+  ],
+  PartyTaxScheme: [
+    {
+      CompanyID: { _text: '77777777' },
+      TaxScheme: {
+        ID: { _text: 'Fake ID' },
+      },
+    },
+  ],
   PostalAddress: {
-    AdditionalStreetName: 'additional street',
-    CityName: 'city',
-    CountrySubentity: 'country subEntity',
-    PostalZone: 'postal',
-    StreetName: 'street',
-    AddressLine: { Line: 'additional line' },
-    Country: { IdentificationCode: 'PL' },
+    AdditionalStreetName: { _text: 'additional street' as ListAgencyNameEnum },
+    CityName: { _text: 'city' as ListAgencyNameEnum },
+    CountrySubentity: { _text: 'country subEntity' as ListAgencyNameEnum },
+    PostalZone: { _text: 'postal' as ListAgencyNameEnum },
+    StreetName: { _text: 'street' as ListAgencyNameEnum },
+    AddressLine: [{ Line: { _text: 'additional line' as ListAgencyNameEnum } }],
+    Country: { IdentificationCode: { _text: 'PL' } },
   },
 };
 
@@ -83,36 +89,49 @@ describe('generatePEF', (): void => {
 
   it('should call pdfMake.createPdf and return its result', () => {
     const invoiceHeader = {
-      ID: 'INVOICE_PeF_1.0',
-      InvoiceTypeCode: '380',
-      DocumentCurrencyCode: 'PLN',
-      TaxCurrencyCode: 'EUR',
+      ID: { _text: 'INVOICE_PeF_1.0' },
+      InvoiceTypeCode: { _text: '380' },
+      DocumentCurrencyCode: { _text: 'PLN' },
+      TaxCurrencyCode: { _text: 'EUR' },
       LegalMonetaryTotal: {
-        PayableAmount: '1000.00',
+        PayableAmount: { _text: '1000.00' },
       },
-      DueDate: '2018-09-30',
-      BuyerReference: '12345',
-      IssueDate: '2018-08-31',
-      TaxPointDate: '2018-08-32',
-      InvoicePeriod: {
-        DescriptionCode: '35',
-        StartDate: '2018-08-01',
-        EndDate: '2018-08-31',
-      },
-      ContractDocumentReference: {
-        ID: 'Contract321',
-      },
+      DueDate: { _text: '2018-09-30' },
+      BuyerReference: { _text: '12345' as ListAgencyNameEnum },
+      IssueDate: { _text: '2018-08-31' },
+      TaxPointDate: { _text: '2018-08-32' },
+      InvoicePeriod: [
+        {
+          DescriptionCode: [{ _text: '35' }],
+          StartDate: { _text: '2018-08-01' },
+          EndDate: { _text: '2018-08-31' },
+        },
+      ],
+      ContractDocumentReference: [
+        {
+          ID: { _text: 'Contract321' },
+        },
+      ],
       OrderReference: {
-        ID: '123',
-        SalesOrderID: 'SO123',
+        ID: { _text: '123' },
+        SalesOrderID: { _text: 'SO123' },
       },
-      DespatchDocumentReference: {
-        ID: 'D12345',
-      },
-      ReceiptDocumentReference: {
-        ID: 'R12345',
-      },
-      Note: 'registration court and registration number, initial capital, invested capital',
+      DespatchDocumentReference: [
+        {
+          ID: { _text: 'D12345' },
+        },
+      ],
+      ReceiptDocumentReference: [
+        {
+          ID: { _text: 'R12345' },
+        },
+      ],
+      Note: [
+        {
+          _text:
+            'registration court and registration number, initial capital, invested capital' as ListAgencyNameEnum,
+        },
+      ],
     };
 
     const legalMonetaryTotal: LegalMonetaryTotal = {

@@ -157,4 +157,4 @@ node dist/cli/index.js upo examples/upo.xml output/upo.pdf
 
 ## Ważne!!!
 
-Dodano obsługę faktur PEF - nie jest jescze gotowa w użyciu produkcyjnym. Trwają testy.
+Dodano obsługę faktur PEF - W najbliższym wydaniu będą dostępne na produkcji.

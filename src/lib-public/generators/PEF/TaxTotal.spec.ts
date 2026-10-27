@@ -1,8 +1,8 @@
 import { beforeEach, describe, it, vi, expect } from 'vitest';
 import { generateTaxTotal } from './TaxTotal';
 import { borderedBox, createPefTableHeader, generatePefTable } from '@shared/functions-pef';
-import { LanguageLocaleIDEnum } from 'src/lib-public/types/pef-invoice.types';
-import { PEFInvoice } from 'src/lib-public/types/typeguards';
+import { PEFInvoice } from '../../types/typeguards';
+import { LanguageLocaleIDEnum } from '../../types/pef-invoice.types';
 
 vi.mock('../../../shared/functions-pef', () => ({
   createPefTableHeader: vi.fn((text: string) => ({ text })),

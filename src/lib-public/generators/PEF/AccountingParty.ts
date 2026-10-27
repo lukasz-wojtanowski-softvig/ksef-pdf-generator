@@ -9,7 +9,7 @@ import {
   createPEFSectionTitle,
   createPEFSubHeader,
 } from '@shared/functions-pef';
-import { AccountingType } from 'src/lib-public/types/pef.types';
+import { AccountingType } from '../../types/pef.types';
 import { createContact } from './shared/contact';
 import { createAddress } from './shared/address';
 import { Party, PartyPartyLegalEntity, PartyPartyTaxScheme } from '../../types/pef-invoice.types';

@@ -1,7 +1,7 @@
 import { beforeEach, describe, it, vi, expect } from 'vitest';
 import { generatePayeeParty } from './PayeeParty';
 import { createInlineLabelValue, createPefHeader, createPEFSubHeader } from '@shared/functions-pef';
-import { EParty, LanguageLocaleIDEnum, ListAgencyNameEnum } from 'src/lib-public/types/pef-invoice.types';
+import { EParty, LanguageLocaleIDEnum, ListAgencyNameEnum } from '../../types/pef-invoice.types';
 
 vi.mock('../../../shared/functions-pef', () => ({
   createPefHeader: vi.fn((text: string) => ({ text })),

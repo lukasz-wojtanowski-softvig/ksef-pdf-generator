@@ -8,7 +8,7 @@ import {
   createPEFSubHeader,
   createSmallInlineLabelValue,
 } from '@shared/functions-pef';
-import { Content, ContentStack, Style } from 'pdfmake/interfaces';
+import { Content, ContentStack, ContentText, Style } from 'pdfmake/interfaces';
 import i18n from 'i18next';
 import { PEFBasicInvoice, PEFInvoiceBillingReference } from '../../types/pef-invoice.types';
 import { PEFCorrectiveInvoice } from '../../types/pef-invoice-corrective.types';
@@ -169,9 +169,7 @@ function generateTwoColumns(contents: Content[], style: Style | undefined = unde
 function addInvoiceNumber(billingReference: PEFInvoiceBillingReference): Content {
   if (hasValue(billingReference?.InvoiceDocumentReference?.IssueDate)) {
     const id = getText(billingReference?.InvoiceDocumentReference?.ID);
-    const date = new Intl.DateTimeFormat('pl-PL').format(
-      new Date(getText(billingReference?.InvoiceDocumentReference?.IssueDate))
-    );
+    const date = `${(formatText(getText(billingReference?.InvoiceDocumentReference?.IssueDate), FormatTyp.Date) as ContentText).text}`;
 
     return formatText(i18n.t('pef.invoiceDescrption.dated', { id, date }), FormatTyp.Label);
   } else {

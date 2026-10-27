@@ -8,8 +8,7 @@ import {
 } from '@shared/functions-pef';
 import { Content } from 'pdfmake/interfaces';
 import i18n from 'i18next';
-import { PEFInvoiceTaxTotal, StickyTaxSubtotal } from '../../types/pef-invoice.types';
-import { Code } from 'src/lib-public/types/pef-invoice-corrective.types';
+import { Code, PEFInvoiceTaxTotal, StickyTaxSubtotal } from '../../types/pef-invoice.types';
 
 export function generateTaxTotal(
   input?: PEFInvoiceTaxTotal[] | PEFInvoiceTaxTotal | undefined,
@@ -47,7 +46,7 @@ export function generateTaxTotal(
         getText(subtotal.TaxCategory?.Percent)
       ),
       exemptionReason: hasValue(TaxExemptionReasonCode)
-        ? getText(TaxExemptionReason) + ' - ' + getText(TaxExemptionReasonCode)
+        ? `${getText(TaxExemptionReason)}${getText(TaxExemptionReason) ? ' - ' : ''}${getText(TaxExemptionReasonCode)}`
         : displayValueOrDash(getText(TaxExemptionReason)),
       taxableAmount: formatTextWithCurrency(
         getNumber(subtotal.TaxableAmount),

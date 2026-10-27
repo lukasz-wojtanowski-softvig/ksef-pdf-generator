@@ -1,5 +1,10 @@
 import FormatTyp from '@shared/enums/common.enum';
-import { ExtensionContent, InvoiceLine, PEFCorrectiveInvoice, UBLExtension } from './pef-invoice-corrective.types';
+import {
+  ExtensionContent,
+  InvoiceLine,
+  PEFCorrectiveInvoice,
+  UBLExtension,
+} from './pef-invoice-corrective.types';
 import { getTable } from '@shared/PDF-functions';
 import { PEFSpecInvoice } from './pef-invoice-spec.types';
 import { PEFBasicInvoice } from './pef-invoice.types';
@@ -35,7 +40,9 @@ export type ExtensionTwo = ExtensionContent;
 export type ExtensionThree = ExtensionContent;
 export type ExtensionFour = ExtensionContent;
 
-export function getUBLExtensionArray(invoice: PEFCorrectiveInvoice | PEFSpecInvoice): UBLExtension[] {
+export function getUBLExtensionArray(
+  invoice: PEFCorrectiveInvoice | PEFSpecInvoice | PEFBasicInvoice
+): UBLExtension[] {
   return getTable(invoice.UBLExtensions?.UBLExtension);
 }
 

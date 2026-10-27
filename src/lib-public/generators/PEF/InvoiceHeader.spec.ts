@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { generateInvoiceHeader } from './InvoiceHeader';
 import { createLabelWithBoldText } from '../../../shared/functions-pef';
-import { PEFInvoice } from 'src/lib-public/types/typeguards';
-import { LanguageLocaleIDEnum, ListAgencyNameEnum } from 'src/lib-public/types/pef-invoice.types';
+import { PEFInvoice } from '../../types/typeguards';
+import { LanguageLocaleIDEnum, ListAgencyNameEnum } from '../../types/pef-invoice-corrective.types';
 
 vi.mock('../../../shared/PDF-functions', () => ({
   getText: vi.fn((data) => data?._text || data),

@@ -13,7 +13,6 @@ import { PEFCorrectiveInvoice, PEFInvoiceAllowanceCharge } from '../../types/pef
 import { isPEFCorrective } from '../../types/typeguards';
 import { SectionType } from '../../../shared/enums/pef-invoice.enum';
 import { getExtensionOne, getExtensionTwo, getUBLExtensionArray } from '../../types/pef.types';
-import { _ } from 'vitest/dist/chunks/reporters.d.BFLkQcL6';
 
 export function generateAllowanceCharge(
   invoice: PEFBasicInvoice | PEFCorrectiveInvoice,

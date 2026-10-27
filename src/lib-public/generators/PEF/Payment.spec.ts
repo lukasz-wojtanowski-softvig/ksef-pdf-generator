@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { generatePayment } from './Payment';
-import { PEFBasicInvoice } from 'src/lib-public/types/pef-invoice.types';
+import { PEFBasicInvoice } from '../../types/pef-invoice.types';
 import { ContentTable } from 'pdfmake/interfaces';
 
 let payment = {

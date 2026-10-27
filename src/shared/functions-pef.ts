@@ -3,13 +3,14 @@ import { formatText, getTable } from '../shared/PDF-functions';
 import { Content, ContentTable, ContentText, Margins, TableCell } from 'pdfmake/interfaces';
 import i18n from 'i18next';
 import { HeaderDefine, PdfOptionField } from './types/pdf-types';
-import { CellStyle, PEFTable, PEFTableCell, PEFTextCell } from 'src/lib-public/types/pef.types';
+import { CellStyle, PEFTable, PEFTableCell, PEFTextCell } from '../lib-public/types/pef.types';
+import UNECE_pl from '../lib-public/generators/PEF/scheme/UNECE_pl.json';
 
 export function formatTextWithCurrency(
   value: number | string | undefined | null,
   currency: string,
   multiplierFactorNumeric?: number | string,
-  emptyValue: string = ''
+  emptyValue = ''
 ): ContentText | string {
   if (value === undefined || value === null || value === '') {
     return emptyValue;
@@ -340,11 +341,11 @@ export function getContentPEFTable(
     });
   });
 
-  const sum: Content[] = [];
+  const sum: TableCell[][] = [];
 
   if (summary) {
     const keys = ['title', 'sum'];
-    const cellTemp: Content[] = [];
+    const cellTemp: TableCell[] = [];
     let elementLength = headerRow.length;
 
     keys.forEach((key) => {
@@ -368,12 +369,12 @@ export function getContentPEFTable(
           }
           if (Array.isArray(cell)) {
             cellTemp.push(
-              { stack: cell, colSpan: s.colSpan, verticalAlignment: 'middle' },
+              { stack: cell, colSpan: s.colSpan, verticalAlignment: 'middle' } as TableCell,
               ...Array(emptyCell).fill('')
             );
           } else {
             cellTemp.push(
-              { ...cell, colSpan: s.colSpan, verticalAlignment: 'middle' },
+              { ...cell, colSpan: s.colSpan, verticalAlignment: 'middle' } as TableCell,
               ...Array(emptyCell).fill('')
             );
           }
@@ -495,7 +496,7 @@ function inlineGenerator(
         acc.push({ text: ', ' });
       }
 
-      return acc[0].text ? acc : '-';
+      return acc;
     }, []),
     margin: lastSection ? [0, 0, 0, 8] : [0, 0, 0, 0],
     alignment: 'center',
@@ -561,4 +562,25 @@ export function displayValueOrDash(value: undefined | null | string): string {
   return value === null || value === undefined || (value as string).replace(/\s+/g, '') === ''
     ? '-'
     : String(value);
+}
+
+export function getNameByCode(code: string): string | undefined {
+  const fn = getNameByCode as any;
+
+  if (!fn.map) {
+    const map = new Map<string, string>();
+    const rows = UNECE_pl.CodeList.SimpleCodeList.Row;
+
+    for (const row of rows) {
+      const codeValue = row.Value.find((v: any) => v._ColumnRef === 'code')?.SimpleValue;
+      const nameValue = row.Value.find((v: any) => v._ColumnRef === 'name')?.SimpleValue;
+
+      if (codeValue && nameValue) {
+        map.set(codeValue, nameValue);
+      }
+    }
+    fn.map = map;
+  }
+
+  return fn.map.get(code);
 }

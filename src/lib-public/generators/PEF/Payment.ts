@@ -7,8 +7,8 @@ import { Content, TableCell } from 'pdfmake/interfaces';
 import i18n from 'i18next';
 import { PEFBasicInvoice, PEFInvoicePaymentMean } from '../../types/pef-invoice.types';
 import { getTable, getText, hasValue } from '../../../shared/PDF-functions';
-import { PEFCorrectiveInvoice } from 'src/lib-public/types/pef-invoice-corrective.types';
-import { PEFSpecInvoice } from 'src/lib-public/types/pef-invoice-spec.types';
+import { PEFSpecInvoice } from '../../types/pef-invoice-spec.types';
+import { PEFCorrectiveInvoice } from '../../types/pef-invoice-corrective.types';
 
 export function generatePayment(invoice: PEFBasicInvoice | PEFCorrectiveInvoice | PEFSpecInvoice): Content[] {
   const result: Content[] = [];
@@ -46,6 +46,7 @@ export function addPaymentMeansTable(paymentMeans: PEFInvoicePaymentMean): Conte
   const { PayeeFinancialAccount, CardAccount, PaymentMandate } = paymentMeans;
   const paymentMeansCodeName = paymentMeans?.PaymentMeansCode?._attributes?.name;
   const paymentMeansCodeDescription = paymentMeansCodeName ? `(${paymentMeansCodeName})` : '';
+
   if (
     hasValue(PayeeFinancialAccount?.FinancialInstitutionBranch?.ID) ||
     hasValue(PayeeFinancialAccount?.ID) ||
@@ -127,22 +128,23 @@ function createPaymentTable(table: TableCell[][]): Content {
       dontBreakRows: true,
     },
     layout: {
-      hLineWidth: (i) => {
-        if (i === 0) return null;
+      hLineWidth: (i): number | null => {
+        if (i === 0) {
+          return null;
+        }
         if (i === 1) {
           return 1;
-        } else {
-          return 0.75;
         }
+        return 0.75;
       },
-      fillColor: (i) => {
+      fillColor: (i): string | null => {
         if (i === 0) {
           return '#F2F2F2';
         }
         return null;
       },
       vLineWidth: () => 0,
-      hLineColor: (i) => {
+      hLineColor: (i): string => {
         if (i === 1) {
           return '#242424';
         } else {

@@ -1,11 +1,7 @@
 import { beforeEach, describe, it, vi, expect } from 'vitest';
 import { generateLegalMonetaryTotal } from './LegalMonetaryTotal';
-import {
-  LanguageLocaleIDEnum,
-  ListAgencyNameEnum,
-  PEFBasicInvoice,
-} from 'src/lib-public/types/pef-invoice.types';
-import { PEFCorrectiveInvoice } from 'src/lib-public/types/pef-invoice-corrective.types';
+import { LanguageLocaleIDEnum, ListAgencyNameEnum, PEFBasicInvoice } from '../../types/pef-invoice.types';
+import { PEFCorrectiveInvoice } from '../../types/pef-invoice-corrective.types';
 import { ContentTable } from 'pdfmake/interfaces';
 import { isPEFCorrective } from '../../types/typeguards';
 import { SectionType } from '@shared/enums/pef-invoice.enum';
@@ -127,10 +123,7 @@ describe(generateLegalMonetaryTotal.name, () => {
   it('should generate legal monetary total section for PEFBasic invoice', () => {
     vi.mocked(isPEFCorrective).mockReturnValue(false);
 
-    const result = generateLegalMonetaryTotal(
-      invoicePEFBasic,
-      SectionType.Basic
-    ) as ContentTable;
+    const result = generateLegalMonetaryTotal(invoicePEFBasic, SectionType.Basic) as ContentTable;
     const stack = (result.table.body[0][0] as any).stack;
     expect(stack[0].text[0].text).toContain('Suma faktury bez podatku VAT');
     expect(stack[0].text[1].text).toContain('PLN');

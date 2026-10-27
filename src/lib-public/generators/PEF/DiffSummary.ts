@@ -1,7 +1,7 @@
 import { getTable, getText, hasValue } from '@shared/PDF-functions';
 import { Content } from 'pdfmake/interfaces';
 import i18n from 'i18next';
-import { PEFCorrectiveInvoice } from 'src/lib-public/types/pef-invoice-corrective.types';
+import { PEFCorrectiveInvoice } from '../../types/pef-invoice-corrective.types';
 import { createPefTableHeader, getContentPEFTable } from '@shared/functions-pef';
 import FormatTyp, { Position } from '@shared/enums/common.enum';
 import { HeaderDefine } from '@shared/types/pdf-types';

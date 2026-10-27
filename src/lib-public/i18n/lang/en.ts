@@ -1,4 +1,4 @@
-import { TranslationKey } from 'src/lib-public/types/common.types';
+import { TranslationKey } from '../../types/common.types';
 import { pl } from './pl';
 
 export const en: TranslationKey<typeof pl> = {

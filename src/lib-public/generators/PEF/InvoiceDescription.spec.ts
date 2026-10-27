@@ -2,11 +2,7 @@ import { PEFType } from './../../types/pef.types';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { generateInvoiceDescription } from './InvoiceDescription';
 import { createLabelWithBoldText } from '@shared/functions-pef';
-import {
-  LanguageLocaleIDEnum,
-  ListAgencyNameEnum,
-  PEFBasicInvoice,
-} from 'src/lib-public/types/pef-invoice.types';
+import { LanguageLocaleIDEnum, ListAgencyNameEnum, PEFBasicInvoice } from '../../types/pef-invoice.types';
 
 vi.mock('../../../shared/functions-pef', () => ({
   createLabelWithBoldText: vi.fn((label: string, value: any) => [{ text: `${label}${value ?? ''}` }]),
